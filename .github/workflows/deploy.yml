@@ -19,7 +19,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: false  # Nonaktifkan submodule checkout
+          submodules-recursive: false
           fetch-depth: 0
+      
+      - name: Verify no submodules
+        run: |
+          if [ -f .gitmodules ]; then
+            echo "ERROR: .gitmodules file found!"
+            exit 1
+          fi
+          echo "✓ No .gitmodules file - storefront is a regular directory"
+          ls -la storefront | head -5
       
       - name: Setup Node.js
         uses: actions/setup-node@v4

@@ -1,0 +1,56 @@
+[
+  {
+    "userId": "c3413905-3bfa-47dc-9f0d-14e07f747ce4",
+    "items": [
+      {
+        "productId": "prod-1",
+        "title": "Sepatu Running Nike Air Zoom Pegasus 41",
+        "image": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500",
+        "price": 1999000,
+        "quantity": 1
+      }
+    ],
+    "total": 1999000,
+    "status": "paid",
+    "shippingAddress": {
+      "name": "w",
+      "phone": "11",
+      "address": "11",
+      "city": "1",
+      "postalCode": "1",
+      "id": "addr-1764140536068",
+      "isDefault": false
+    },
+    "paymentMethod": "bank_transfer",
+    "id": "bd87c0e6-51a4-4817-8ace-f12bd1d1b1ef",
+    "createdAt": "2025-11-26T07:02:16.085Z",
+    "updatedAt": "2025-11-27T01:53:37.212Z"
+  },
+  {
+    "userId": "c3413905-3bfa-47dc-9f0d-14e07f747ce4",
+    "items": [
+      {
+        "productId": "prod-4",
+        "title": "Sepatu Running Nike Invincible 3",
+        "image": "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500",
+        "price": 2799000,
+        "quantity": 1
+      }
+    ],
+    "total": 2799000,
+    "status": "pending",
+    "shippingAddress": {
+      "name": "kaka",
+      "phone": "0921223",
+      "address": "asasss",
+      "city": "ass",
+      "postalCode": "aq",
+      "id": "addr-1764140789331",
+      "isDefault": false
+    },
+    "paymentMethod": "bank_transfer",
+    "id": "485040a7-0bab-4c3f-8df9-27967a321c1b",
+    "createdAt": "2025-11-26T07:06:29.379Z",
+    "updatedAt": "2025-11-26T07:06:29.379Z"
+  }
+]
