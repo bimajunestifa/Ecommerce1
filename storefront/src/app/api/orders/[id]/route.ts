@@ -6,7 +6,7 @@ export const dynamic = 'error';
 export const dynamicParams = false;
 
 // Required for static export - return empty array since API routes won't work in static export
-export function generateStaticParams() {
+export async function generateStaticParams() {
   return [];
 }
 
