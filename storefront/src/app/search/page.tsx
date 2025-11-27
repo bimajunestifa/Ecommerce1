@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Product } from "@/lib/types";
 import { formatIDR } from "@/lib/products";
 import Link from "next/link";
 
-export default function SearchPage() {
+function SearchContent() {
 	const searchParams = useSearchParams();
 	const query = searchParams.get("q") || "";
 	const [products, setProducts] = useState<Product[]>([]);
@@ -127,5 +127,13 @@ export default function SearchPage() {
 				</>
 			)}
 		</div>
+	);
+}
+
+export default function SearchPage() {
+	return (
+		<Suspense fallback={<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 text-center">Memuat...</div>}>
+			<SearchContent />
+		</Suspense>
 	);
 }

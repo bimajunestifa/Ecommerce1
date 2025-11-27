@@ -98,7 +98,6 @@ export default function ProductImageZoom({ images, title }: ProductImageZoomProp
 							style={{
 								transform: showZoom ? `scale(3)` : "scale(1)",
 								transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-								imageRendering: "high-quality",
 							}}
 							loading="eager"
 							decoding="async"
@@ -188,9 +187,6 @@ export default function ProductImageZoom({ images, title }: ProductImageZoomProp
 							src={getHighQualityImage(images[lightboxIndex])}
 							alt={`${title} ${lightboxIndex + 1}`}
 							className="max-h-[95vh] w-auto rounded-lg object-contain"
-							style={{ 
-								imageRendering: "high-quality" as const,
-							}}
 							fetchPriority="high"
 						/>
 						{images.length > 1 && (
