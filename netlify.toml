@@ -3,10 +3,12 @@
   base = "storefront"
   
   # Command untuk build aplikasi
-  command = "npm run build"
+  command = "npm ci && npm run build"
   
-  # Plugin Next.js akan handle publish directory secara otomatis
-  # publish = ".next" (tidak perlu, plugin akan handle)
+  # Environment variables untuk build
+  [build.environment]
+    NODE_VERSION = "20"
+    NPM_FLAGS = "--legacy-peer-deps"
 
 # Konfigurasi untuk Next.js Runtime
 # Plugin ini akan otomatis:
