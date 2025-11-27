@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'error';\nimport { NextRequest, NextResponse } from "next/server";
 import { createUser, findUserByEmail } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 
@@ -38,3 +38,4 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ error: "Terjadi kesalahan" }, { status: 500 });
 	}
 }
+

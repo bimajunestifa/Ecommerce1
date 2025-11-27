@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+export const dynamic = 'error';\nimport { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 export async function POST() {
@@ -6,3 +6,4 @@ export async function POST() {
 	cookieStore.delete("auth-token");
 	return NextResponse.json({ message: "Logout berhasil" });
 }
+

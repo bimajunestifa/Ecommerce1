@@ -3,6 +3,8 @@ import { findUserByEmail } from "@/lib/db";
 import { comparePassword, generateToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 
+export const dynamic = 'error';
+
 export async function POST(req: NextRequest) {
 	try {
 		const { email, password } = await req.json();
@@ -38,3 +40,4 @@ export async function POST(req: NextRequest) {
 		return NextResponse.json({ error: "Terjadi kesalahan" }, { status: 500 });
 	}
 }
+

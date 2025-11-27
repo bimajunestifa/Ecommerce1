@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'export', // Static export untuk GitHub Pages
+  basePath: process.env.NODE_ENV === 'production' ? '/Ecommerce1' : '', // Base path sesuai repository name
+  trailingSlash: true, // Tambahkan trailing slash untuk kompatibilitas GitHub Pages
+  
+  // Skip API routes saat static export (GitHub Pages tidak support API routes)
+  skipTrailingSlashRedirect: true,
+  
   images: {
     remotePatterns: [
       {
@@ -68,7 +75,7 @@ const nextConfig: NextConfig = {
         hostname: '**.stockx.com',
       },
     ],
-    unoptimized: false,
+    unoptimized: true, // Wajib true untuk static export
   },
 };
 

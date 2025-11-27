@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+export const dynamic = 'error';\nimport { NextResponse } from "next/server";
 import { getCurrentUser, verifyToken } from "@/lib/auth";
 import { findUserById } from "@/lib/db";
 import { cookies } from "next/headers";
@@ -36,3 +36,4 @@ export async function GET() {
 		return NextResponse.json({ user: null }, { status: 200 });
 	}
 }
+

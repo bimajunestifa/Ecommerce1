@@ -3,6 +3,8 @@ import { readProducts, writeProducts } from "@/lib/db";
 import { Product } from "@/lib/types";
 import crypto from "crypto";
 
+export const dynamic = 'error';
+
 export async function GET() {
 	const items = readProducts();
 	return NextResponse.json(items);
@@ -40,5 +42,6 @@ export async function POST(req: NextRequest) {
 	writeProducts([product, ...list]);
 	return NextResponse.json(product, { status: 201 });
 }
+
 
 

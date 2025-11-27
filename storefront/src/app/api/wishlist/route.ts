@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+export const dynamic = 'error';\nimport { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { findUserById, writeUsers } from "@/lib/db";
 
@@ -74,3 +74,4 @@ export async function DELETE(req: NextRequest) {
 		return NextResponse.json({ error: "Terjadi kesalahan" }, { status: 500 });
 	}
 }
+

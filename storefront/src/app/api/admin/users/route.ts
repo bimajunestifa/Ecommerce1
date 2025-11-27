@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { readUsers } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 
+export const dynamic = 'error';
+
 export async function GET(req: NextRequest) {
 	try {
 		const user = await getCurrentUser();
@@ -18,3 +20,4 @@ export async function GET(req: NextRequest) {
 		return NextResponse.json({ error: "Terjadi kesalahan" }, { status: 500 });
 	}
 }
+
