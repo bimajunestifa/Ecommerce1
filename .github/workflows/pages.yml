@@ -52,6 +52,15 @@ jobs:
         env:
           NODE_ENV: production
       
+      - name: Verify build output
+        run: |
+          if [ ! -d "storefront/out" ]; then
+            echo "ERROR: storefront/out directory not found!"
+            exit 1
+          fi
+          echo "✓ Build output found in storefront/out"
+          ls -la storefront/out | head -10
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
