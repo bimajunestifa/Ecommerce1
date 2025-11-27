@@ -3,12 +3,12 @@
   base = "storefront"
   
   # Command untuk build aplikasi
-  command = "npm ci && npm run build"
+  command = "npm install && npm run build"
   
   # Environment variables untuk build
   [build.environment]
     NODE_VERSION = "20"
-    NPM_FLAGS = "--legacy-peer-deps"
+    NPM_FLAGS = ""
 
 # Konfigurasi untuk Next.js Runtime
 # Plugin ini akan otomatis:
