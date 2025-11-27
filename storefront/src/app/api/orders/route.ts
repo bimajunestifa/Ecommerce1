@@ -1,6 +1,8 @@
-export const dynamic = 'error';\nimport { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createOrder, findOrdersByUserId } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+
+export const dynamic = 'error';
 
 export async function GET(req: NextRequest) {
 	try {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { readOrders, writeOrders, findOrderById } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 
+export const dynamic = 'error';
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
 		const { id } = await params;

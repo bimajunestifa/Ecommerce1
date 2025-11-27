@@ -1,5 +1,7 @@
-export const dynamic = 'error';\nimport { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+
+export const dynamic = 'error';
 
 export async function POST() {
 	const cookieStore = await cookies();

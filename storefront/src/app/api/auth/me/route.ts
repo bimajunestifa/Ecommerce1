@@ -1,7 +1,9 @@
-export const dynamic = 'error';\nimport { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getCurrentUser, verifyToken } from "@/lib/auth";
 import { findUserById } from "@/lib/db";
 import { cookies } from "next/headers";
+
+export const dynamic = 'error';
 
 export async function GET() {
 	try {
