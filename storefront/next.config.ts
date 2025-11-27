@@ -4,9 +4,10 @@ const nextConfig: NextConfig = {
   output: 'export', // Static export untuk GitHub Pages
   basePath: process.env.NODE_ENV === 'production' ? '/Ecommerce1' : '', // Base path sesuai repository name
   trailingSlash: true, // Tambahkan trailing slash untuk kompatibilitas GitHub Pages
-  
-  // Skip API routes saat static export (GitHub Pages tidak support API routes)
   skipTrailingSlashRedirect: true,
+  
+  // Exclude API routes from build
+  distDir: '.next',
   
   images: {
     remotePatterns: [

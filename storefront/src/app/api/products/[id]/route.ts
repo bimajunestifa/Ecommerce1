@@ -3,6 +3,12 @@ import { findProduct, readProducts, writeProducts } from "@/lib/db";
 import { Product } from "@/lib/types";
 
 export const dynamic = 'error';
+export const dynamicParams = false;
+
+// Required for static export - return empty array since API routes won't work in static export
+export function generateStaticParams() {
+  return [];
+}
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	const { id } = await params;
