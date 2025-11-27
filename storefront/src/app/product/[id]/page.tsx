@@ -6,8 +6,16 @@ import ProductReviews from "@/components/product/ProductReviews";
 import WishlistButton from "@/components/product/WishlistButton";
 import ProductImageZoom from "@/components/product/ProductImageZoom";
 
-import { findProduct } from "@/lib/db";
+import { findProduct, readProducts } from "@/lib/db";
 import { findReviewsByProductId } from "@/lib/db";
+
+// Required for static export - generate all product pages at build time
+export async function generateStaticParams() {
+	const products = readProducts();
+	return products.map((product) => ({
+		id: product.id,
+	}));
+}
 
 async function getProduct(id: string) {
 	return findProduct(id);

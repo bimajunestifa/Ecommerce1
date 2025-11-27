@@ -1,15 +1,8 @@
 import ProductCard from "@/components/ProductCard";
-import { Product } from "@/lib/types";
-
-async function getProducts() {
-	const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-	const res = await fetch(`${base}/api/products`, { cache: "no-store" });
-	if (!res.ok) return [];
-	return (await res.json()) as Product[];
-}
+import { readProducts } from "@/lib/db";
 
 export default async function ProductsPage() {
-	const products = await getProducts();
+	const products = readProducts();
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

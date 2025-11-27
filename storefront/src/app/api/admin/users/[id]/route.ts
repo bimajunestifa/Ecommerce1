@@ -5,9 +5,10 @@ import { getCurrentUser } from "@/lib/auth";
 export const dynamic = 'error';
 export const dynamicParams = false;
 
-// Required for static export - return empty array since API routes won't work in static export
+// Required for static export - return array with dummy value since API routes won't work in static export
+// This is only to satisfy the build requirement
 export async function generateStaticParams() {
-  return [];
+  return [{ id: 'dummy' }];
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
