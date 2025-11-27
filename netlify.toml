@@ -5,18 +5,16 @@
   # Command untuk build aplikasi
   command = "npm run build"
   
-  # Directory hasil build yang akan di-deploy
-  publish = ".next"
+  # Plugin Next.js akan handle publish directory secara otomatis
+  # publish = ".next" (tidak perlu, plugin akan handle)
 
 # Konfigurasi untuk Next.js Runtime
+# Plugin ini akan otomatis:
+# - Convert API routes ke Netlify Functions
+# - Handle Next.js routing
+# - Optimize build output
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-# Redirect rules untuk Next.js routing
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/___netlify-handler"
-  status = 200
 
 # Headers untuk security dan performance
 [[headers]]
