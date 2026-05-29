@@ -36,12 +36,29 @@ export default function ProductCard({ product }: Props) {
 						src={product.image}
 						alt={product.title}
 						className="h-full w-full object-contain p-6 transition-transform duration-300 group-hover:scale-105"
+						loading="lazy"
+						crossOrigin="anonymous"
 						onError={(e) => {
-							(e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='14'%3EGambar tidak tersedia%3C/text%3E%3C/svg%3E";
+							const target = e.target as HTMLImageElement;
+							// Cek apakah sudah di-set ke placeholder
+							if (!target.src.includes('data:image/svg+xml')) {
+								target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='14'%3EGambar tidak tersedia%3C/text%3E%3C/svg%3E";
+							}
+						}}
+						onLoad={(e) => {
+							// Pastikan gambar berhasil dimuat
+							const target = e.target as HTMLImageElement;
+							if (target.naturalWidth === 0 || target.naturalHeight === 0) {
+								target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='14'%3EGambar tidak tersedia%3C/text%3E%3C/svg%3E";
+							}
 						}}
 					/>
 				) : (
-					<div className="h-full w-full" />
+					<div className="flex h-full w-full items-center justify-center">
+						<svg className="h-16 w-16 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+						</svg>
+					</div>
 				)}
 				{product.badge && (
 					<span className="absolute left-3 top-3 rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold text-white">

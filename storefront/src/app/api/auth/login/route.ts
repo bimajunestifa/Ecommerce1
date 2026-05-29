@@ -3,11 +3,22 @@ import { findUserByEmail } from "@/lib/db";
 import { comparePassword, generateToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 
-export const dynamic = 'error';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
 	try {
-		const { email, password } = await req.json();
+		// Parse request body dengan error handling
+		let body;
+		try {
+			body = await req.json();
+		} catch (parseError) {
+			return NextResponse.json({ 
+				error: "Invalid request body",
+				details: "Request body harus berupa JSON"
+			}, { status: 400 });
+		}
+
+		const { email, password } = body;
 
 		if (!email || !password) {
 			return NextResponse.json({ error: "Email dan password diperlukan" }, { status: 400 });
@@ -30,6 +41,7 @@ export async function POST(req: NextRequest) {
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "lax",
 			maxAge: 60 * 60 * 24 * 7, // 7 days
+			path: "/", // Pastikan path root
 		});
 
 		return NextResponse.json({ 
@@ -37,7 +49,20 @@ export async function POST(req: NextRequest) {
 			message: "Login berhasil" 
 		});
 	} catch (error) {
-		return NextResponse.json({ error: "Terjadi kesalahan" }, { status: 500 });
+		console.error("Login error:", error);
+		const errorMessage = error instanceof Error ? error.message : "Unknown error";
+		const errorStack = error instanceof Error ? error.stack : undefined;
+		
+		return NextResponse.json({ 
+			error: "Terjadi kesalahan saat login",
+			details: errorMessage,
+			...(process.env.NODE_ENV === "development" && { stack: errorStack })
+		}, { 
+			status: 500,
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
 	}
 }
 

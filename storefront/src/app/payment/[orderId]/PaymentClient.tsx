@@ -4,6 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthContext";
 import { formatIDR } from "@/lib/products";
 import Link from "next/link";
+import { Modal } from "@/components/Modal";
+import { Toast } from "@/components/Toast";
 
 type Order = {
 	id: string;
@@ -59,6 +61,9 @@ export default function PaymentClient() {
 	const [uploading, setUploading] = useState(false);
 	const [paymentProof, setPaymentProof] = useState<File | null>(null);
 	const [note, setNote] = useState("");
+	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+	const [showConfirmModal, setShowConfirmModal] = useState(false);
 
 	useEffect(() => {
 		if (!authLoading && !user) {

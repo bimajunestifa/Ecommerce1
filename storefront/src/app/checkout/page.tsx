@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthContext";
 import { useState, useEffect } from "react";
 import { formatIDR } from "@/lib/products";
+import { Modal } from "@/components/Modal";
+import { BackButton } from "@/components/BackButton";
 
 export default function CheckoutPage() {
 	const { items, total, clear } = useCart();
@@ -18,6 +20,8 @@ export default function CheckoutPage() {
 		postalCode: "",
 	});
 	const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
+	const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
+	const [errors, setErrors] = useState<Record<string, string>>({});
 
 	useEffect(() => {
 		if (!user && !loading) {
@@ -31,12 +35,28 @@ export default function CheckoutPage() {
 			return;
 		}
 
-		if (!shippingAddress.name || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode) {
-			alert("Mohon lengkapi alamat pengiriman");
+		// Validasi form
+		const newErrors: Record<string, string> = {};
+		if (!shippingAddress.name) newErrors.name = "Nama penerima harus diisi";
+		if (!shippingAddress.phone) newErrors.phone = "Nomor telepon harus diisi";
+		if (!shippingAddress.address) newErrors.address = "Alamat harus diisi";
+		if (!shippingAddress.city) newErrors.city = "Kota harus diisi";
+		if (!shippingAddress.postalCode) newErrors.postalCode = "Kode pos harus diisi";
+
+		if (Object.keys(newErrors).length > 0) {
+			setErrors(newErrors);
+			setErrorModal({ isOpen: true, message: "Mohon lengkapi semua field alamat pengiriman" });
 			return;
 		}
 
+		if (items.length === 0) {
+			setErrorModal({ isOpen: true, message: "Keranjang Anda kosong" });
+			return;
+		}
+
+		setErrors({});
 		setLoading(true);
+		
 		try {
 			const res = await fetch("/api/orders", {
 				method: "POST",
@@ -59,21 +79,26 @@ export default function CheckoutPage() {
 				}),
 			});
 
+			const data = await res.json();
+
 			if (res.ok) {
-				const orderData = await res.json();
 				clear();
 				// Redirect ke halaman pembayaran jika bank transfer
 				if (paymentMethod === "bank_transfer") {
-					router.push(`/payment/${orderData.order.id}`);
+					router.push(`/payment/${data.order.id}`);
 				} else {
 					router.push("/checkout/success");
 				}
 			} else {
-				alert("Gagal membuat pesanan");
+				const errorMessage = data.error || data.details || "Gagal membuat pesanan. Silakan coba lagi.";
+				setErrorModal({ isOpen: true, message: errorMessage });
 			}
 		} catch (error) {
 			console.error("Error placing order:", error);
-			alert("Terjadi kesalahan");
+			setErrorModal({ 
+				isOpen: true, 
+				message: "Terjadi kesalahan saat memproses pesanan. Silakan coba lagi atau hubungi customer service." 
+			});
 		} finally {
 			setLoading(false);
 		}
@@ -85,6 +110,9 @@ export default function CheckoutPage() {
 
 	return (
 		<div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+			<div className="mb-6">
+				<BackButton href="/cart" label="Kembali ke Keranjang" />
+			</div>
 			<h1 className="mb-6 text-2xl font-bold">Checkout</h1>
 			<div className="grid gap-8 md:grid-cols-2">
 				<div className="space-y-6">
@@ -96,30 +124,48 @@ export default function CheckoutPage() {
 								<input
 									type="text"
 									value={shippingAddress.name}
-									onChange={(e) => setShippingAddress({ ...shippingAddress, name: e.target.value })}
+									onChange={(e) => {
+										setShippingAddress({ ...shippingAddress, name: e.target.value });
+										if (errors.name) setErrors({ ...errors, name: "" });
+									}}
 									required
-									className="w-full rounded-lg border border-zinc-300 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+									className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
+										errors.name ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+									}`}
 								/>
+								{errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
 							</div>
 							<div>
 								<label className="mb-1 block text-sm font-medium">No. Telepon</label>
 								<input
 									type="tel"
 									value={shippingAddress.phone}
-									onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
+									onChange={(e) => {
+										setShippingAddress({ ...shippingAddress, phone: e.target.value });
+										if (errors.phone) setErrors({ ...errors, phone: "" });
+									}}
 									required
-									className="w-full rounded-lg border border-zinc-300 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+									className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
+										errors.phone ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+									}`}
 								/>
+								{errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
 							</div>
 							<div>
 								<label className="mb-1 block text-sm font-medium">Alamat</label>
 								<textarea
 									value={shippingAddress.address}
-									onChange={(e) => setShippingAddress({ ...shippingAddress, address: e.target.value })}
+									onChange={(e) => {
+										setShippingAddress({ ...shippingAddress, address: e.target.value });
+										if (errors.address) setErrors({ ...errors, address: "" });
+									}}
 									required
 									rows={3}
-									className="w-full rounded-lg border border-zinc-300 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+									className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
+										errors.address ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+									}`}
 								/>
+								{errors.address && <p className="mt-1 text-xs text-red-500">{errors.address}</p>}
 							</div>
 							<div className="grid grid-cols-2 gap-4">
 								<div>
@@ -127,20 +173,32 @@ export default function CheckoutPage() {
 									<input
 										type="text"
 										value={shippingAddress.city}
-										onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
+										onChange={(e) => {
+											setShippingAddress({ ...shippingAddress, city: e.target.value });
+											if (errors.city) setErrors({ ...errors, city: "" });
+										}}
 										required
-										className="w-full rounded-lg border border-zinc-300 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+										className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
+											errors.city ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+										}`}
 									/>
+									{errors.city && <p className="mt-1 text-xs text-red-500">{errors.city}</p>}
 								</div>
 								<div>
 									<label className="mb-1 block text-sm font-medium">Kode Pos</label>
 									<input
 										type="text"
 										value={shippingAddress.postalCode}
-										onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })}
+										onChange={(e) => {
+											setShippingAddress({ ...shippingAddress, postalCode: e.target.value });
+											if (errors.postalCode) setErrors({ ...errors, postalCode: "" });
+										}}
 										required
-										className="w-full rounded-lg border border-zinc-300 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+										className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
+											errors.postalCode ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+										}`}
 									/>
+									{errors.postalCode && <p className="mt-1 text-xs text-red-500">{errors.postalCode}</p>}
 								</div>
 							</div>
 						</div>
@@ -227,13 +285,53 @@ export default function CheckoutPage() {
 						<button
 							onClick={placeOrder}
 							disabled={items.length === 0 || loading}
-							className="mt-6 w-full rounded-lg bg-orange-500 px-6 py-3 font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
+							className="mt-6 w-full rounded-lg bg-orange-500 px-6 py-3 font-semibold text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
-							{loading ? "Memproses..." : "Buat Pesanan"}
+							{loading ? (
+								<span className="flex items-center justify-center gap-2">
+									<svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+									</svg>
+									Memproses...
+								</span>
+							) : (
+								"Buat Pesanan"
+							)}
 						</button>
+						{items.length === 0 && (
+							<p className="mt-2 text-center text-xs text-red-500">Keranjang Anda kosong</p>
+						)}
 					</div>
 				</div>
 			</div>
+
+			{/* Error Modal */}
+			<Modal
+				isOpen={errorModal.isOpen}
+				onClose={() => setErrorModal({ isOpen: false, message: "" })}
+				title="Error"
+				size="sm"
+			>
+				<div className="space-y-4">
+					<div className="flex items-start gap-3">
+						<div className="flex-shrink-0 rounded-full bg-red-100 p-2 dark:bg-red-900/20">
+							<svg className="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
+						<p className="flex-1 text-sm text-zinc-600 dark:text-zinc-400">{errorModal.message}</p>
+					</div>
+					<div className="flex justify-end">
+						<button
+							onClick={() => setErrorModal({ isOpen: false, message: "" })}
+							className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+						>
+							Mengerti
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	);
 }

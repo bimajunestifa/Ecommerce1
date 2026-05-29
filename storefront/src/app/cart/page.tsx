@@ -1,9 +1,18 @@
 "use client";
 import Link from "next/link";
 import { useCart } from "@/components/cart/CartContext";
+import { Modal } from "@/components/Modal";
+import { useState } from "react";
 
 export default function CartPage() {
 	const { items, setQty, remove, total, clear } = useCart();
+	const [showClearModal, setShowClearModal] = useState(false);
+
+	const handleClearCart = () => {
+		clear();
+		setShowClearModal(false);
+	};
+
 	return (
 		<div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
 			<h1 className="mb-6 text-2xl font-bold">Keranjang</h1>

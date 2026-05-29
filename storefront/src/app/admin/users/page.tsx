@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AdminSidebar } from "@/components/AdminSidebar";
 
 type User = {
 	id: string;
@@ -81,19 +82,22 @@ export default function AdminUsersPage() {
 	};
 
 	return (
-		<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6 flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold">Kelola User</h1>
-					<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Lihat dan kelola semua user</p>
-				</div>
-				<Link
-					href="/admin/create-account"
-					className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
-				>
-					+ Tambah User/Karyawan
-				</Link>
-			</div>
+		<div className="flex min-h-screen">
+			<AdminSidebar />
+			<div className="ml-64 flex-1">
+				<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+					<div className="mb-6 flex items-center justify-between">
+						<div>
+							<h1 className="text-2xl font-bold">Kelola User</h1>
+							<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Lihat dan kelola semua user</p>
+						</div>
+						<Link
+							href="/admin/create-account"
+							className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+						>
+							+ Tambah User/Karyawan
+						</Link>
+					</div>
 
 			{users.length === 0 ? (
 				<div className="rounded-lg border border-zinc-200 p-16 text-center dark:border-zinc-800">

@@ -4,6 +4,8 @@ import { useAuth } from "@/components/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatIDR } from "@/lib/products";
+import { AdminSidebar } from "@/components/AdminSidebar";
+import { ConfirmModal } from "@/components/Modal";
 
 type Order = {
 	id: string;
@@ -52,6 +54,13 @@ export default function AdminOrdersPage() {
 	const router = useRouter();
 	const [orders, setOrders] = useState<Order[]>([]);
 	const [filterStatus, setFilterStatus] = useState<string>("all");
+	const [searchQuery, setSearchQuery] = useState("");
+	const [confirmModal, setConfirmModal] = useState<{
+		isOpen: boolean;
+		orderId: string;
+		newStatus: string;
+	}>({ isOpen: false, orderId: "", newStatus: "" });
+	const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
 	useEffect(() => {
 		if (!loading && !user) {
@@ -78,19 +87,30 @@ export default function AdminOrdersPage() {
 		}
 	};
 
-	const updateOrderStatus = async (orderId: string, newStatus: string) => {
+	const handleStatusChange = (orderId: string, newStatus: string) => {
+		setConfirmModal({ isOpen: true, orderId, newStatus });
+	};
+
+	const updateOrderStatus = async () => {
 		try {
-			const res = await fetch(`/api/orders/${orderId}`, {
+			const res = await fetch(`/api/orders/${confirmModal.orderId}`, {
 				method: "PATCH",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ status: newStatus }),
+				body: JSON.stringify({ status: confirmModal.newStatus }),
 			});
 
 			if (res.ok) {
+				setToast({ message: "Status pesanan berhasil diupdate", type: "success" });
 				fetchAllOrders();
+				setTimeout(() => setToast(null), 3000);
+			} else {
+				setToast({ message: "Gagal mengupdate status pesanan", type: "error" });
+				setTimeout(() => setToast(null), 3000);
 			}
 		} catch (error) {
 			console.error("Error updating order:", error);
+			setToast({ message: "Terjadi kesalahan saat mengupdate status", type: "error" });
+			setTimeout(() => setToast(null), 3000);
 		}
 	};
 
@@ -102,33 +122,35 @@ export default function AdminOrdersPage() {
 		return null;
 	}
 
-	const filteredOrders = filterStatus === "all" 
-		? orders 
-		: orders.filter(o => o.status === filterStatus);
+	const filteredOrders = orders.filter((order) => {
+		const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+		const matchesSearch = searchQuery === "" || 
+			order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			order.shippingAddress.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+			order.shippingAddress.phone.includes(searchQuery);
+		return matchesStatus && matchesSearch;
+	});
 
 	return (
-		<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6 flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold">Kelola Pesanan</h1>
-					<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Lihat dan update status pesanan</p>
-				</div>
-				<Link href="/admin" className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">
-					Kembali ke Admin
-				</Link>
-			</div>
+		<div className="flex min-h-screen">
+			<AdminSidebar />
+			<div className="ml-64 flex-1">
+				<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+					<div className="mb-6">
+						<h1 className="text-2xl font-bold">Kelola Pesanan</h1>
+						<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Lihat dan update status pesanan</p>
+					</div>
 
-			<div className="mb-4 grid grid-cols-3 gap-4">
-				<Link href="/admin" className="rounded-lg border border-zinc-300 px-4 py-3 text-center hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">
-					Produk
-				</Link>
-				<Link href="/admin/orders" className="rounded-lg border border-orange-500 bg-orange-50 px-4 py-3 text-center font-semibold text-orange-600 dark:bg-orange-900/20">
-					Pesanan
-				</Link>
-				<Link href="/karyawan" className="rounded-lg border border-zinc-300 px-4 py-3 text-center hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">
-					Karyawan
-				</Link>
-			</div>
+					{/* Search */}
+					<div className="mb-4">
+						<input
+							type="text"
+							placeholder="Cari berdasarkan ID, nama, atau nomor telepon..."
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className="w-full rounded-lg border border-zinc-300 px-4 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+						/>
+					</div>
 
 			<div className="mb-4 flex gap-2 overflow-x-auto">
 				<button
@@ -160,8 +182,37 @@ export default function AdminOrdersPage() {
 			</div>
 
 			{filteredOrders.length === 0 ? (
-				<div className="rounded-lg border border-zinc-200 p-16 text-center dark:border-zinc-800">
-					<p className="text-zinc-600 dark:text-zinc-400">Tidak ada pesanan</p>
+				<div className="rounded-lg border border-zinc-200 bg-white p-16 text-center dark:border-zinc-800 dark:bg-zinc-900">
+					<div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+						<svg className="h-10 w-10 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+						</svg>
+					</div>
+					<h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+						{orders.length === 0
+							? "Belum ada pesanan"
+							: searchQuery || filterStatus !== "all"
+							? "Tidak ada pesanan yang sesuai"
+							: "Tidak ada pesanan"}
+					</h3>
+					<p className="text-sm text-zinc-600 dark:text-zinc-400">
+						{orders.length === 0
+							? "Pesanan akan muncul di sini setelah customer melakukan checkout"
+							: searchQuery || filterStatus !== "all"
+							? "Coba ubah filter atau kata kunci pencarian"
+							: "Tidak ada pesanan dengan status ini"}
+					</p>
+					{(searchQuery || filterStatus !== "all") && (
+						<button
+							onClick={() => {
+								setSearchQuery("");
+								setFilterStatus("all");
+							}}
+							className="mt-4 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+						>
+							Reset Filter
+						</button>
+					)}
 				</div>
 			) : (
 				<div className="space-y-4">
@@ -186,7 +237,7 @@ export default function AdminOrdersPage() {
 									</span>
 									<select
 										value={order.status}
-										onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+										onChange={(e) => handleStatusChange(order.id, e.target.value)}
 										className="rounded-lg border border-zinc-300 bg-white px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900"
 									>
 										<option value="pending">Menunggu Pembayaran</option>
@@ -234,6 +285,8 @@ export default function AdminOrdersPage() {
 					))}
 				</div>
 			)}
+				</div>
+			</div>
 		</div>
 	);
 }
