@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Order, TrackingHistory } from "@/lib/types";
 import { formatIDR } from "@/lib/products";
 import Link from "next/link";
+import { BackButton } from "@/components/BackButton";
 
 const statusLabels: Record<string, string> = {
 	pending: "Menunggu Pembayaran",
@@ -171,12 +172,9 @@ export default function OrderDetailClient() {
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-			<Link href="/orders" className="mb-6 inline-flex items-center text-sm text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100">
-				<svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-				</svg>
-				Kembali ke Daftar Pesanan
-			</Link>
+			<div className="mb-6">
+				<BackButton href="/orders" label="Kembali ke Daftar Pesanan" />
+			</div>
 
 			<div className="mb-8">
 				<h1 className="text-3xl font-bold">Detail Pesanan</h1>

@@ -37,18 +37,12 @@ export default function ProductCard({ product }: Props) {
 						alt={product.title}
 						className="h-full w-full object-contain p-6 transition-transform duration-300 group-hover:scale-105"
 						loading="lazy"
-						crossOrigin="anonymous"
+						referrerPolicy="no-referrer-when-downgrade"
 						onError={(e) => {
 							const target = e.target as HTMLImageElement;
 							// Cek apakah sudah di-set ke placeholder
 							if (!target.src.includes('data:image/svg+xml')) {
-								target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='14'%3EGambar tidak tersedia%3C/text%3E%3C/svg%3E";
-							}
-						}}
-						onLoad={(e) => {
-							// Pastikan gambar berhasil dimuat
-							const target = e.target as HTMLImageElement;
-							if (target.naturalWidth === 0 || target.naturalHeight === 0) {
+								target.onerror = null; // Prevent infinite loop
 								target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='14'%3EGambar tidak tersedia%3C/text%3E%3C/svg%3E";
 							}
 						}}

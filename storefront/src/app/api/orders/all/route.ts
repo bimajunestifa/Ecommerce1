@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readOrders } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 
-export const dynamic = 'error';
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
 	try {

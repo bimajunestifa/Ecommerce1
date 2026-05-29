@@ -11,7 +11,7 @@
       }
     ],
     "total": 1999000,
-    "status": "paid",
+    "status": "shipped",
     "shippingAddress": {
       "name": "w",
       "phone": "11",
@@ -24,7 +24,7 @@
     "paymentMethod": "bank_transfer",
     "id": "bd87c0e6-51a4-4817-8ace-f12bd1d1b1ef",
     "createdAt": "2025-11-26T07:02:16.085Z",
-    "updatedAt": "2025-11-27T01:53:37.212Z"
+    "updatedAt": "2026-01-26T03:03:10.840Z"
   },
   {
     "userId": "c3413905-3bfa-47dc-9f0d-14e07f747ce4",
@@ -38,7 +38,7 @@
       }
     ],
     "total": 2799000,
-    "status": "pending",
+    "status": "cancelled",
     "shippingAddress": {
       "name": "kaka",
       "phone": "0921223",
@@ -51,6 +51,148 @@
     "paymentMethod": "bank_transfer",
     "id": "485040a7-0bab-4c3f-8df9-27967a321c1b",
     "createdAt": "2025-11-26T07:06:29.379Z",
-    "updatedAt": "2025-11-26T07:06:29.379Z"
+    "updatedAt": "2025-11-28T02:35:37.920Z"
+  },
+  {
+    "userId": "admin-001",
+    "items": [
+      {
+        "productId": "08825170-e4c7-49d2-9310-9c5d1f13aaaf",
+        "title": "Jordan 1 Low Travis Scott x Fragment ",
+        "image": "https://senikersku.com/wp-content/uploads/2021/08/Jordan-1-Low-Travis-Scott-x-Fragment-1.png",
+        "price": 22000000,
+        "quantity": 1
+      }
+    ],
+    "total": 22000000,
+    "status": "paid",
+    "shippingAddress": {
+      "name": "1",
+      "phone": "q",
+      "address": "w",
+      "city": "w",
+      "postalCode": "w",
+      "id": "addr-1764297069348",
+      "isDefault": false
+    },
+    "paymentMethod": "cod",
+    "id": "a7f10ca0-97b8-42d8-9bff-c37ccf1fa84c",
+    "createdAt": "2025-11-28T02:31:09.506Z",
+    "updatedAt": "2025-11-28T02:35:53.689Z"
+  },
+  {
+    "userId": "c6c11192-6572-4bcb-93df-975caa828e53",
+    "items": [
+      {
+        "productId": "f86c2a15-5a59-49a8-b88d-9f0c4c8d25ca",
+        "title": " NIKE DUNK LOW NEXT NATURE WOMEN",
+        "image": "https://i.pinimg.com/1200x/e4/95/09/e495091e756b26497b5e62aebde53604.jpg",
+        "price": 1400000,
+        "quantity": 1
+      }
+    ],
+    "total": 1400000,
+    "status": "paid",
+    "shippingAddress": {
+      "name": "Aldo Besti",
+      "phone": "09876543",
+      "address": "Aldo atas",
+      "city": "Pku",
+      "postalCode": "12321",
+      "id": "addr-1764297692546",
+      "isDefault": false
+    },
+    "paymentMethod": "bank_transfer",
+    "id": "0f91ec52-2b92-4ded-ab32-4e9f85bd2de8",
+    "createdAt": "2025-11-28T02:41:32.570Z",
+    "updatedAt": "2025-11-28T02:45:54.619Z"
+  },
+  {
+    "userId": "c6c11192-6572-4bcb-93df-975caa828e53",
+    "items": [
+      {
+        "productId": "02f4ecd6-7254-410a-987e-9c5c7204d65f",
+        "title": "Nike Giannis Freak 7",
+        "image": "https://img.ncrsport.com/img/storage/large/IH2313-600-1.jpg",
+        "price": 1720000,
+        "quantity": 1
+      }
+    ],
+    "total": 1720000,
+    "status": "paid",
+    "shippingAddress": {
+      "name": "aldo",
+      "phone": "asq",
+      "address": "asas",
+      "city": "as",
+      "postalCode": "aw",
+      "id": "addr-1764297887877",
+      "isDefault": false
+    },
+    "paymentMethod": "e_wallet",
+    "id": "a36a8ca3-e58a-43e8-b4a9-1fff5fd0316f",
+    "createdAt": "2025-11-28T02:44:47.898Z",
+    "updatedAt": "2025-11-28T02:45:59.468Z"
+  },
+  {
+    "userId": "796a3f89-50e2-4763-9f03-efe570dc379e",
+    "items": [
+      {
+        "productId": "08825170-e4c7-49d2-9310-9c5d1f13aaaf",
+        "title": "Jordan 1 Low Travis Scott x Fragment ",
+        "image": "https://senikersku.com/wp-content/uploads/2021/08/Jordan-1-Low-Travis-Scott-x-Fragment-1.png",
+        "price": 22000000,
+        "quantity": 1
+      }
+    ],
+    "total": 22000000,
+    "status": "pending",
+    "shippingAddress": {
+      "name": "raka",
+      "phone": "a0916252",
+      "address": "paksinailss",
+      "city": "jawa",
+      "postalCode": "12221",
+      "id": "addr-1768299272202",
+      "isDefault": false
+    },
+    "paymentMethod": "bank_transfer",
+    "id": "a2f7a81e-fe5a-480e-9ce5-c650f6a5669c",
+    "createdAt": "2026-01-13T10:14:32.417Z",
+    "updatedAt": "2026-01-13T10:14:32.417Z"
+  },
+  {
+    "userId": "aa019246-42c8-4029-984b-c27d04f1e24b",
+    "items": [
+      {
+        "productId": "08825170-e4c7-49d2-9310-9c5d1f13aaaf",
+        "title": "Jordan 1 Low Travis Scott x Fragment ",
+        "image": "https://senikersku.com/wp-content/uploads/2021/08/Jordan-1-Low-Travis-Scott-x-Fragment-1.png",
+        "price": 22000000,
+        "quantity": 3
+      },
+      {
+        "productId": "02f4ecd6-7254-410a-987e-9c5c7204d65f",
+        "title": "Nike Giannis Freak 7",
+        "image": "https://img.ncrsport.com/img/storage/large/IH2313-600-1.jpg",
+        "price": 1720000,
+        "quantity": 1
+      }
+    ],
+    "total": 67720000,
+    "status": "pending",
+    "shippingAddress": {
+      "name": "refan",
+      "phone": "08912345678",
+      "address": "ampsng ponfokj gamabang",
+      "city": "jawa",
+      "postalCode": "12401190",
+      "id": "addr-1775556135378",
+      "isDefault": false
+    },
+    "paymentMethod": "cod",
+    "id": "a3245b16-57c2-405c-a642-e9235de69289",
+    "createdAt": "2026-04-07T10:02:15.593Z",
+    "updatedAt": "2026-04-07T10:02:15.593Z"
   }
 ]

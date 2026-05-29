@@ -102,17 +102,45 @@ export default function KaryawanPage() {
 				body: JSON.stringify({ status: confirmModal.newStatus }),
 			});
 
+			// Cek content type sebelum parse JSON
+			const contentType = res.headers.get("content-type");
+			if (!contentType || !contentType.includes("application/json")) {
+				const text = await res.text();
+				console.error("Non-JSON response:", text.substring(0, 200));
+				setToast({ 
+					message: "Server mengembalikan response yang tidak valid. Silakan restart server development.", 
+					type: "error" 
+				});
+				setTimeout(() => setToast(null), 5000);
+				return;
+			}
+
+			let data;
+			try {
+				data = await res.json();
+			} catch (jsonError) {
+				console.error("Error parsing JSON:", jsonError);
+				setToast({ 
+					message: "Gagal memparse response dari server. Silakan restart server.", 
+					type: "error" 
+				});
+				setTimeout(() => setToast(null), 5000);
+				return;
+			}
+
 			if (res.ok) {
 				setToast({ message: "Status pesanan berhasil diupdate", type: "success" });
 				fetchAllOrders();
 				setTimeout(() => setToast(null), 3000);
 			} else {
-				setToast({ message: "Gagal mengupdate status pesanan", type: "error" });
+				const errorMessage = data.error || data.details || "Gagal mengupdate status pesanan";
+				console.error("Update order error:", errorMessage, data);
+				setToast({ message: errorMessage, type: "error" });
 				setTimeout(() => setToast(null), 3000);
 			}
 		} catch (error) {
 			console.error("Error updating order:", error);
-			setToast({ message: "Terjadi kesalahan saat mengupdate status", type: "error" });
+			setToast({ message: "Terjadi kesalahan saat mengupdate status. Silakan coba lagi.", type: "error" });
 			setTimeout(() => setToast(null), 3000);
 		}
 	};
@@ -218,7 +246,7 @@ export default function KaryawanPage() {
 									</span>
 									<select
 										value={order.status}
-										onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+										onChange={(e) => handleStatusChange(order.id, e.target.value)}
 										className="rounded-lg border border-zinc-300 bg-white px-3 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900"
 									>
 										<option value="pending">Menunggu Pembayaran</option>
@@ -266,6 +294,53 @@ export default function KaryawanPage() {
 					))}
 				</div>
 			)}
+
+					{/* Confirm Modal */}
+					<ConfirmModal
+						isOpen={confirmModal.isOpen}
+						onClose={() => setConfirmModal({ isOpen: false, orderId: "", newStatus: "" })}
+						onConfirm={updateOrderStatus}
+						title="Konfirmasi Update Status"
+						message={`Apakah Anda yakin ingin mengubah status pesanan menjadi "${statusLabels[confirmModal.newStatus] || confirmModal.newStatus}"?`}
+						confirmText="Ya, Update"
+						cancelText="Batal"
+						variant="info"
+					/>
+
+					{/* Toast Notification */}
+					{toast && (
+						<div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+							<div
+								className={`flex items-center gap-3 rounded-lg px-4 py-3 shadow-lg ${
+									toast.type === "success"
+										? "bg-green-500 text-white"
+										: toast.type === "error"
+										? "bg-red-500 text-white"
+										: "bg-blue-500 text-white"
+								}`}
+							>
+								{toast.type === "success" ? (
+									<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+									</svg>
+								) : toast.type === "error" ? (
+									<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								) : (
+									<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+								)}
+								<p className="text-sm font-medium">{toast.message}</p>
+								<button onClick={() => setToast(null)} className="ml-2 hover:opacity-80">
+									<svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+									</svg>
+								</button>
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

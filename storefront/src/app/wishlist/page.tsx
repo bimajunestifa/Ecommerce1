@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Product } from "@/lib/types";
 import Link from "next/link";
 import { formatIDR } from "@/lib/products";
+import { BackButton } from "@/components/BackButton";
 
 export default function WishlistPage() {
 	const { user, loading } = useAuth();
@@ -66,6 +67,9 @@ export default function WishlistPage() {
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-16">
+			<div className="mb-6">
+				<BackButton href="/" label="Kembali ke Beranda" />
+			</div>
 			<h1 className="mb-8 text-3xl font-bold">Wishlist Saya</h1>
 			{products.length === 0 ? (
 				<div className="rounded-lg border border-zinc-200 p-16 text-center dark:border-zinc-800">

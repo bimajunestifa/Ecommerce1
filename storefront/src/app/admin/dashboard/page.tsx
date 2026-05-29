@@ -4,6 +4,7 @@ import { useAuth } from "@/components/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatIDR } from "@/lib/products";
+import { AdminSidebar } from "@/components/AdminSidebar";
 
 type Stats = {
 	totalProducts: number;
@@ -88,15 +89,18 @@ export default function AdminDashboard() {
 	}
 
 	return (
-		<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6">
-				<h1 className="text-2xl font-bold">Dashboard Admin</h1>
-				<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Overview sistem ecommerce</p>
-			</div>
+		<div className="flex min-h-screen">
+			<AdminSidebar />
+			<div className="ml-64 flex-1">
+				<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+					<div className="mb-6">
+						<h1 className="text-2xl font-bold">Dashboard Admin</h1>
+						<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Overview sistem ecommerce</p>
+					</div>
 
-			{/* Stats Cards */}
-			<div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+					{/* Stats Cards */}
+					<div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+						<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
 					<div className="flex items-center justify-between">
 						<div>
 							<p className="text-sm text-zinc-600 dark:text-zinc-400">Total Produk</p>
@@ -108,12 +112,12 @@ export default function AdminDashboard() {
 							</svg>
 						</div>
 					</div>
-					<Link href="/admin/products" className="mt-4 block text-sm text-orange-500 hover:underline">
-						Kelola Produk →
-					</Link>
-				</div>
+							<Link href="/admin/products" className="mt-4 block text-sm text-orange-500 hover:underline">
+								Kelola Produk →
+							</Link>
+						</div>
 
-				<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+						<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
 					<div className="flex items-center justify-between">
 						<div>
 							<p className="text-sm text-zinc-600 dark:text-zinc-400">Total Pesanan</p>
@@ -125,12 +129,12 @@ export default function AdminDashboard() {
 							</svg>
 						</div>
 					</div>
-					<Link href="/admin/orders" className="mt-4 block text-sm text-orange-500 hover:underline">
-						Kelola Pesanan →
-					</Link>
-				</div>
+							<Link href="/admin/orders" className="mt-4 block text-sm text-orange-500 hover:underline">
+								Kelola Pesanan →
+							</Link>
+						</div>
 
-				<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+						<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
 					<div className="flex items-center justify-between">
 						<div>
 							<p className="text-sm text-zinc-600 dark:text-zinc-400">Total User</p>
@@ -142,12 +146,12 @@ export default function AdminDashboard() {
 							</svg>
 						</div>
 					</div>
-					<Link href="/admin/users" className="mt-4 block text-sm text-orange-500 hover:underline">
-						Kelola User →
-					</Link>
-				</div>
+							<Link href="/admin/users" className="mt-4 block text-sm text-orange-500 hover:underline">
+								Kelola User →
+							</Link>
+						</div>
 
-				<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+						<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
 					<div className="flex items-center justify-between">
 						<div>
 							<p className="text-sm text-zinc-600 dark:text-zinc-400">Total Revenue</p>
@@ -159,85 +163,87 @@ export default function AdminDashboard() {
 							</svg>
 						</div>
 					</div>
-					<p className="mt-4 text-xs text-zinc-600 dark:text-zinc-400">Dari pesanan selesai</p>
-				</div>
-			</div>
-
-			{/* Quick Actions */}
-			<div className="mb-8 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-				<h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
-				<div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-					<Link
-						href="/admin/products/new"
-						className="rounded-lg border border-zinc-200 p-4 text-center hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-					>
-						<div className="mb-2 text-2xl">➕</div>
-						<p className="text-sm font-medium">Tambah Produk</p>
-					</Link>
-					<Link
-						href="/admin/create-account"
-						className="rounded-lg border border-zinc-200 p-4 text-center hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-					>
-						<div className="mb-2 text-2xl">👤</div>
-						<p className="text-sm font-medium">Tambah Karyawan</p>
-					</Link>
-					<Link
-						href="/admin/orders"
-						className="rounded-lg border border-zinc-200 p-4 text-center hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-					>
-						<div className="mb-2 text-2xl">📦</div>
-						<p className="text-sm font-medium">Lihat Pesanan</p>
-					</Link>
-					<Link
-						href="/admin/users"
-						className="rounded-lg border border-zinc-200 p-4 text-center hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-					>
-						<div className="mb-2 text-2xl">👥</div>
-						<p className="text-sm font-medium">Kelola User</p>
-					</Link>
-				</div>
-			</div>
-
-			{/* Recent Orders */}
-			<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-				<div className="mb-4 flex items-center justify-between">
-					<h2 className="text-lg font-semibold">Pesanan Terbaru</h2>
-					<Link href="/admin/orders" className="text-sm text-orange-500 hover:underline">
-						Lihat Semua →
-					</Link>
-				</div>
-				{stats.recentOrders.length === 0 ? (
-					<p className="text-center text-sm text-zinc-600 dark:text-zinc-400">Belum ada pesanan</p>
-				) : (
-					<div className="overflow-x-auto">
-						<table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
-							<thead>
-								<tr>
-									<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Order ID</th>
-									<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Total</th>
-									<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Status</th>
-									<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Tanggal</th>
-								</tr>
-							</thead>
-							<tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-								{stats.recentOrders.map((order: any) => (
-									<tr key={order.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900">
-										<td className="px-4 py-3 text-sm font-mono">{order.id.substring(0, 8)}...</td>
-										<td className="px-4 py-3 text-sm font-semibold">{formatIDR(order.total)}</td>
-										<td className="px-4 py-3 text-sm">
-											<span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-												{order.status}
-											</span>
-										</td>
-										<td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
-											{new Date(order.createdAt).toLocaleDateString("id-ID")}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
+							<p className="mt-4 text-xs text-zinc-600 dark:text-zinc-400">Dari pesanan selesai</p>
+						</div>
 					</div>
-				)}
+
+					{/* Quick Actions */}
+					<div className="mb-8 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+						<h2 className="mb-4 text-lg font-semibold">Quick Actions</h2>
+						<div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+							<Link
+								href="/admin/products/new"
+								className="rounded-lg border border-zinc-200 p-4 text-center hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+							>
+								<div className="mb-2 text-2xl">➕</div>
+								<p className="text-sm font-medium">Tambah Produk</p>
+							</Link>
+							<Link
+								href="/admin/create-account"
+								className="rounded-lg border border-zinc-200 p-4 text-center hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+							>
+								<div className="mb-2 text-2xl">👤</div>
+								<p className="text-sm font-medium">Tambah Karyawan</p>
+							</Link>
+							<Link
+								href="/admin/orders"
+								className="rounded-lg border border-zinc-200 p-4 text-center hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+							>
+								<div className="mb-2 text-2xl">📦</div>
+								<p className="text-sm font-medium">Lihat Pesanan</p>
+							</Link>
+							<Link
+								href="/admin/users"
+								className="rounded-lg border border-zinc-200 p-4 text-center hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+							>
+								<div className="mb-2 text-2xl">👥</div>
+								<p className="text-sm font-medium">Kelola User</p>
+							</Link>
+						</div>
+					</div>
+
+					{/* Recent Orders */}
+					<div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+						<div className="mb-4 flex items-center justify-between">
+							<h2 className="text-lg font-semibold">Pesanan Terbaru</h2>
+							<Link href="/admin/orders" className="text-sm text-orange-500 hover:underline">
+								Lihat Semua →
+							</Link>
+						</div>
+						{stats.recentOrders.length === 0 ? (
+							<p className="text-center text-sm text-zinc-600 dark:text-zinc-400">Belum ada pesanan</p>
+						) : (
+							<div className="overflow-x-auto">
+								<table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+									<thead>
+										<tr>
+											<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Order ID</th>
+											<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Total</th>
+											<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Status</th>
+											<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Tanggal</th>
+										</tr>
+									</thead>
+									<tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+										{stats.recentOrders.map((order: any) => (
+											<tr key={order.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900">
+												<td className="px-4 py-3 text-sm font-mono">{order.id.substring(0, 8)}...</td>
+												<td className="px-4 py-3 text-sm font-semibold">{formatIDR(order.total)}</td>
+												<td className="px-4 py-3 text-sm">
+													<span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+														{order.status}
+													</span>
+												</td>
+												<td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
+													{new Date(order.createdAt).toLocaleDateString("id-ID")}
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						)}
+					</div>
+				</div>
 			</div>
 		</div>
 	);

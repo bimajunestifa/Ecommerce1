@@ -4,6 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthContext";
 import Link from "next/link";
 import ImageURLHelper from "@/components/ImageURLHelper";
+import { BackButton } from "@/components/BackButton";
+import { AdminSidebar } from "@/components/AdminSidebar";
 
 export default function EditProductClient() {
 	const params = useParams<{ id: string }>();
@@ -92,14 +94,15 @@ export default function EditProductClient() {
 	}
 
 	return (
-		<div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6 flex items-center justify-between">
-				<h1 className="text-2xl font-bold">Edit Produk</h1>
-				<Link href="/admin/products" className="text-sm text-zinc-600 hover:underline dark:text-zinc-400">
-					← Kembali
-				</Link>
-			</div>
-			<form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+		<div className="flex min-h-screen">
+			<AdminSidebar />
+			<div className="ml-64 flex-1">
+				<div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+					<div className="mb-6">
+						<BackButton href="/admin/products" label="Kembali ke Daftar Produk" />
+					</div>
+					<h1 className="mb-6 text-2xl font-bold">Edit Produk</h1>
+					<form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
 				{error && <div className="rounded bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">{error}</div>}
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<label className="block text-sm">ID
@@ -175,8 +178,10 @@ export default function EditProductClient() {
 					<button disabled={loading} className="flex-1 rounded-lg bg-orange-500 px-6 py-3 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50">{loading ? "Menyimpan..." : "Simpan"}</button>
 					<button type="button" onClick={onDelete} disabled={loading} className="rounded-lg border border-red-300 px-6 py-3 text-sm font-semibold text-red-700 hover:bg-red-50 dark:border-red-700 dark:hover:bg-red-900/30">Hapus</button>
 					<button type="button" onClick={() => router.back()} className="rounded-lg border border-zinc-300 px-6 py-3 text-sm font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">Batal</button>
+					</div>
+				</form>
 				</div>
-			</form>
+			</div>
 		</div>
 	);
 }

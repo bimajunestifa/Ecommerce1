@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthContext";
 import Link from "next/link";
 import ImageURLHelper from "@/components/ImageURLHelper";
+import { BackButton } from "@/components/BackButton";
+import { AdminSidebar } from "@/components/AdminSidebar";
 
 export default function NewProductPage() {
 	const router = useRouter();
@@ -63,15 +65,16 @@ export default function NewProductPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6 flex items-center justify-between">
-				<h1 className="text-2xl font-bold">Tambah Produk Baru</h1>
-				<Link href="/admin/products" className="text-sm text-zinc-600 hover:underline dark:text-zinc-400">
-					← Kembali
-				</Link>
-			</div>
+		<div className="flex min-h-screen">
+			<AdminSidebar />
+			<div className="ml-64 flex-1">
+				<div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+					<div className="mb-6">
+						<BackButton href="/admin/products" label="Kembali ke Daftar Produk" />
+					</div>
+					<h1 className="mb-6 text-2xl font-bold">Tambah Produk Baru</h1>
 
-			<form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+					<form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
 				{error && <div className="rounded bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">{error}</div>}
 
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -205,8 +208,10 @@ export default function NewProductPage() {
 					>
 						Batal
 					</button>
+					</div>
+				</form>
 				</div>
-			</form>
+			</div>
 		</div>
 	);
 }

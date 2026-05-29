@@ -151,6 +151,8 @@ export default function AdminUsersPage() {
 					</table>
 				</div>
 			)}
+				</div>
+			</div>
 		</div>
 	);
 }

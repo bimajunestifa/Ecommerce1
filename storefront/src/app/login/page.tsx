@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/AuthContext";
 
@@ -9,7 +8,6 @@ export default function LoginPage() {
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
-	const router = useRouter();
 	const { refresh } = useAuth();
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -24,23 +22,39 @@ export default function LoginPage() {
 				body: JSON.stringify({ email, password }),
 			});
 
-			const data = await res.json();
-
-			if (!res.ok) {
-				setError(data.error || "Login gagal");
+			// Cek content type sebelum parse JSON
+			const contentType = res.headers.get("content-type");
+			if (!contentType || !contentType.includes("application/json")) {
+				const text = await res.text();
+				console.error("Non-JSON response:", text.substring(0, 200));
+				setError("Server mengembalikan response yang tidak valid");
 				setLoading(false);
 				return;
 			}
 
-			// Refresh auth context untuk update user state
+			const data = await res.json();
+
+			if (!res.ok) {
+				const errorMsg = data.error || data.details || "Login gagal";
+				console.error("Login error:", errorMsg, data);
+				setError(errorMsg);
+				setLoading(false);
+				return;
+			}
+
 			await refresh();
-			// Tunggu sebentar agar state ter-update
-			setTimeout(() => {
-				router.push("/");
-				router.refresh();
-			}, 100);
+			await new Promise((resolve) => setTimeout(resolve, 300));
+
+			if (data.user?.role === "admin") {
+				window.location.href = "/admin";
+			} else if (data.user?.role === "karyawan") {
+				window.location.href = "/karyawan";
+			} else {
+				window.location.href = "/";
+			}
 		} catch (err) {
-			setError("Terjadi kesalahan");
+			console.error("Login catch error:", err);
+			setError(err instanceof Error ? err.message : "Terjadi kesalahan");
 		} finally {
 			setLoading(false);
 		}

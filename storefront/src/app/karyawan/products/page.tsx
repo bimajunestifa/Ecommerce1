@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { formatIDR } from "@/lib/products";
+import { KaryawanSidebar } from "@/components/KaryawanSidebar";
 
 export default function KaryawanProductsPage() {
 	const { user, loading } = useAuth();
@@ -42,28 +43,19 @@ export default function KaryawanProductsPage() {
 	}
 
 	return (
-		<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6 flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold">Kelola Produk</h1>
-					<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Lihat dan edit produk</p>
-				</div>
-				<Link href="/karyawan/add-product" className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600">
-					Tambah Produk
-				</Link>
-			</div>
-
-			<div className="mb-4 grid grid-cols-3 gap-4">
-				<Link href="/karyawan" className="rounded-lg border border-zinc-300 px-4 py-3 text-center hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">
-					Pesanan
-				</Link>
-				<Link href="/karyawan/products" className="rounded-lg border border-orange-500 bg-orange-50 px-4 py-3 text-center font-semibold text-orange-600 dark:bg-orange-900/20">
-					Produk
-				</Link>
-				<Link href="/karyawan/add-product" className="rounded-lg border border-zinc-300 px-4 py-3 text-center hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">
-					Tambah Produk
-				</Link>
-			</div>
+		<div className="flex min-h-screen">
+			<KaryawanSidebar />
+			<div className="ml-64 flex-1">
+				<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+					<div className="mb-6 flex items-center justify-between">
+						<div>
+							<h1 className="text-2xl font-bold">Kelola Produk</h1>
+							<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Lihat dan edit produk</p>
+						</div>
+						<Link href="/karyawan/add-product" className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600">
+							Tambah Produk
+						</Link>
+					</div>
 
 			{products.length === 0 ? (
 				<div className="rounded-lg border border-zinc-200 p-16 text-center dark:border-zinc-800">
@@ -102,6 +94,8 @@ export default function KaryawanProductsPage() {
 					))}
 				</div>
 			)}
+				</div>
+			</div>
 		</div>
 	);
 }

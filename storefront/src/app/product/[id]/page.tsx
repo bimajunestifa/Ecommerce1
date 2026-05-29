@@ -5,6 +5,7 @@ import AddToCart from "@/components/product/AddToCart";
 import ProductReviews from "@/components/product/ProductReviews";
 import WishlistButton from "@/components/product/WishlistButton";
 import ProductImageZoom from "@/components/product/ProductImageZoom";
+import { BackButton } from "@/components/BackButton";
 
 import { findProduct, readProducts } from "@/lib/db";
 import { findReviewsByProductId } from "@/lib/db";
@@ -54,6 +55,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
 	return (
 		<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+			<div className="mb-6">
+				<BackButton href="/products" label="Kembali ke Semua Produk" />
+			</div>
 			<div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
 				<div>
 					<ProductImageZoom

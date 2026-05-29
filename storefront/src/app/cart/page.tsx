@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useCart } from "@/components/cart/CartContext";
 import { Modal } from "@/components/Modal";
 import { useState } from "react";
+import { BackButton } from "@/components/BackButton";
 
 export default function CartPage() {
 	const { items, setQty, remove, total, clear } = useCart();
@@ -15,13 +16,27 @@ export default function CartPage() {
 
 	return (
 		<div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+			<div className="mb-6">
+				<BackButton href="/products" label="Lanjut Belanja" />
+			</div>
 			<h1 className="mb-6 text-2xl font-bold">Keranjang</h1>
 			{items.length === 0 ? (
-				<div className="rounded-lg border p-8 text-center dark:border-zinc-800">
-					<p>Keranjang kosong.</p>
-					<div className="mt-4">
-						<Link href="/products" className="underline">Belanja sekarang</Link>
+				<div className="rounded-lg border border-zinc-200 p-16 text-center dark:border-zinc-800">
+					<div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+						<svg className="h-10 w-10 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+						</svg>
 					</div>
+					<h3 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">Keranjang Anda Kosong</h3>
+					<p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
+						Mulai belanja dan tambahkan produk ke keranjang Anda
+					</p>
+					<Link 
+						href="/products" 
+						className="inline-block rounded-lg bg-orange-500 px-6 py-2 font-semibold text-white hover:bg-orange-600"
+					>
+						Belanja Sekarang
+					</Link>
 				</div>
 			) : (
 				<div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -63,11 +78,46 @@ export default function CartPage() {
 								</div>
 							</div>
 						</div>
-						<Link href="/checkout" className="block w-full rounded-lg bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white hover:bg-orange-600">Checkout</Link>
-						<button onClick={clear} className="mt-3 w-full text-sm text-red-600 hover:underline">Kosongkan Keranjang</button>
+						<Link href="/checkout" className="block w-full rounded-lg bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white hover:bg-orange-600">
+							Checkout
+						</Link>
+						<button 
+							onClick={() => setShowClearModal(true)} 
+							className="mt-3 w-full text-sm text-red-600 hover:underline"
+						>
+							Kosongkan Keranjang
+						</button>
 					</div>
 				</div>
 			)}
+
+			{/* Clear Cart Confirmation Modal */}
+			<Modal
+				isOpen={showClearModal}
+				onClose={() => setShowClearModal(false)}
+				title="Kosongkan Keranjang"
+				size="sm"
+			>
+				<div className="space-y-4">
+					<p className="text-sm text-zinc-600 dark:text-zinc-400">
+						Apakah Anda yakin ingin mengosongkan keranjang? Semua item akan dihapus.
+					</p>
+					<div className="flex justify-end gap-3">
+						<button
+							onClick={() => setShowClearModal(false)}
+							className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
+						>
+							Batal
+						</button>
+						<button
+							onClick={handleClearCart}
+							className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+						>
+							Ya, Kosongkan
+						</button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	);
 }

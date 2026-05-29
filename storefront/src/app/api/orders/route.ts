@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createOrder, findOrdersByUserId } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 
-export const dynamic = 'error';
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
 	try {
@@ -42,7 +42,12 @@ export async function POST(req: NextRequest) {
 
 		return NextResponse.json({ order, message: "Order berhasil dibuat" });
 	} catch (error) {
-		return NextResponse.json({ error: "Terjadi kesalahan" }, { status: 500 });
+		console.error("Error creating order:", error);
+		const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan";
+		return NextResponse.json({ 
+			error: "Gagal membuat pesanan",
+			details: errorMessage 
+		}, { status: 500 });
 	}
 }
 

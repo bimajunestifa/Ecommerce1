@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
 	if (!isAdmin && !isStaff) return NextResponse.next();
 
 	const user = isAdmin
-		? process.env.BASIC_AUTH_USER ?? "admin"
+		? process.env.BASIC_AUTH_USER ?? "addminn"
 		: process.env.STAFF_AUTH_USER ?? "staff";
 	const pass = isAdmin
 		? process.env.BASIC_AUTH_PASS ?? "admin123"
@@ -37,5 +37,6 @@ function unauthorized() {
 export const config = {
 	matcher: ["/admin/:path*", "/petugas/:path*"],
 };
+
 
 

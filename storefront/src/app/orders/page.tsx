@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Order, TrackingHistory } from "@/lib/types";
 import { formatIDR } from "@/lib/products";
 import Link from "next/link";
+import { BackButton } from "@/components/BackButton";
 
 const statusLabels: Record<string, string> = {
 	pending: "Menunggu Pembayaran",

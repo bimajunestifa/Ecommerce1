@@ -1,29 +1,42 @@
 [
   {
-    "email": "sepatu@gmail.com",
-    "password": "$2b$10$SqpIks3QKThzAh9wJipTjeh/3DFdAQB6mYfx1pgWM3wJs6.3Ms8zO",
-    "name": "Sepatu",
-    "role": "user",
-    "id": "c3413905-3bfa-47dc-9f0d-14e07f747ce4",
-    "createdAt": "2025-11-26T06:58:18.796Z"
-  },
-  {
     "email": "admin@bimastore.com",
-    "password": "$2b$10$ouYDOxUge4OoqK5LkecQpugFJsYZR9QrGgHyTRCwos/o0tLONVeYS",
+    "password": "$2b$10$FRim5zN..Utw2JaXnQcVz.MEgfJFm4tsiRgYt0HmlGBuoFr5LoEPy",
     "name": "Admin Bima Store",
     "role": "admin",
     "id": "admin-001",
-    "createdAt": "2025-11-26T13:00:00.000Z",
-    "wishlist": [
-      "ab7ceba7-068a-45c5-910c-b1d34d3b6560"
-    ]
+    "createdAt": "2025-11-26T13:00:00.000Z"
   },
   {
     "email": "karyawan@bimastore.com",
-    "password": "$2b$10$qK4Mp2OVdktpXlOoQZfsgOiC2EgiUfOVpoTaqiBWxU2g9bA7lnlvK",
+    "password": "$2b$10$tS5Cfv92.CV6ztAVBkVaVOD.pLYwyYGF9IQi7XADIArsAzRpfKLui",
     "name": "Karyawan Bima Store",
     "role": "karyawan",
     "id": "karyawan-001",
     "createdAt": "2025-11-26T13:00:00.000Z"
+  },
+  {
+    "id": "karyawan-pembelian-001",
+    "email": "karyawan.pembelian@bimastore.com",
+    "name": "Karyawan Pembelian",
+    "password": "$2b$10$jU6CETJ8Y.YaqwB71CT7reu9kaC2F4pPZCw6L6hvn2ZKZZ1R2Bvk.",
+    "role": "karyawan",
+    "createdAt": "2026-01-26T00:00:00.000Z"
+  },
+  {
+    "email": "refan@gmail.com",
+    "password": "$2b$10$0YwBomCVS4uF.I.OMiKS2epyhkATZBq00/cY/MI9lw75NLzQa5L8W",
+    "name": "refan",
+    "role": "user",
+    "id": "aa019246-42c8-4029-984b-c27d04f1e24b",
+    "createdAt": "2026-04-07T10:00:30.692Z"
+  },
+  {
+    "email": "rakafirdauss13@gmail.com",
+    "password": "$2b$10$FPkKXa/TrxWQNewhj6tTaOceQaUEaS4jPZEi7QRWw3lhiXdTrrCnW",
+    "name": "raka",
+    "role": "user",
+    "id": "f5095062-aa7c-43a9-9d1f-e77b3d5847c2",
+    "createdAt": "2026-05-29T07:43:46.807Z"
   }
 ]

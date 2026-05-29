@@ -3,7 +3,7 @@ import { getCurrentUser, verifyToken } from "@/lib/auth";
 import { findUserById } from "@/lib/db";
 import { cookies } from "next/headers";
 
-export const dynamic = 'error';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
 	try {

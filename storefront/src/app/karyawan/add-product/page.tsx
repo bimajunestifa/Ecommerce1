@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ImageURLHelper from "@/components/ImageURLHelper";
+import { BackButton } from "@/components/BackButton";
+import { KaryawanSidebar } from "@/components/KaryawanSidebar";
 
 export default function KaryawanAddProduct() {
 	const router = useRouter();
@@ -56,15 +58,16 @@ export default function KaryawanAddProduct() {
 	}
 
 	return (
-		<div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6 flex items-center justify-between">
-				<h1 className="text-2xl font-bold">Tambah Produk</h1>
-				<Link href="/karyawan/products" className="text-sm text-zinc-600 hover:underline dark:text-zinc-400">
-					Kembali
-				</Link>
-			</div>
+		<div className="flex min-h-screen">
+			<KaryawanSidebar />
+			<div className="ml-64 flex-1">
+				<div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+					<div className="mb-6">
+						<BackButton href="/karyawan/products" label="Kembali ke Daftar Produk" />
+					</div>
+					<h1 className="mb-6 text-2xl font-bold">Tambah Produk</h1>
 
-			<div className="mb-4 grid grid-cols-3 gap-4">
+					<div className="mb-4 grid grid-cols-3 gap-4">
 				<Link href="/karyawan" className="rounded-lg border border-zinc-300 px-4 py-3 text-center hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900">
 					Pesanan
 				</Link>
@@ -74,9 +77,9 @@ export default function KaryawanAddProduct() {
 				<Link href="/karyawan/add-product" className="rounded-lg border border-orange-500 bg-orange-50 px-4 py-3 text-center font-semibold text-orange-600 dark:bg-orange-900/20">
 					Tambah Produk
 				</Link>
-			</div>
+					</div>
 
-			<form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
+					<form onSubmit={onSubmit} className="space-y-4 rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
 				{error && <div className="rounded bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">{error}</div>}
 				
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -210,8 +213,10 @@ export default function KaryawanAddProduct() {
 					>
 						Batal
 					</button>
+					</div>
+				</form>
 				</div>
-			</form>
+			</div>
 		</div>
 	);
 }

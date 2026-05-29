@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { formatIDR } from "@/lib/products";
+import { AdminSidebar } from "@/components/AdminSidebar";
 
 export default function AdminProductsPage() {
 	const { user, loading: authLoading } = useAuth();
@@ -91,19 +92,22 @@ export default function AdminProductsPage() {
 	);
 
 	return (
-		<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6 flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold">Kelola Produk</h1>
-					<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Tambah, edit, dan hapus produk</p>
-				</div>
-				<Link
-					href="/admin/products/new"
-					className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
-				>
-					+ Tambah Produk
-				</Link>
-			</div>
+		<div className="flex min-h-screen">
+			<AdminSidebar />
+			<div className="ml-64 flex-1">
+				<div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+					<div className="mb-6 flex items-center justify-between">
+						<div>
+							<h1 className="text-2xl font-bold">Kelola Produk</h1>
+							<p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Tambah, edit, dan hapus produk</p>
+						</div>
+						<Link
+							href="/admin/products/new"
+							className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
+						>
+							+ Tambah Produk
+						</Link>
+					</div>
 
 			<div className="mb-4">
 				<input
@@ -207,6 +211,8 @@ export default function AdminProductsPage() {
 					</table>
 				</div>
 			)}
+				</div>
+			</div>
 		</div>
 	);
 }

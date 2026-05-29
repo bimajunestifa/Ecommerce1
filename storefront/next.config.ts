@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export', // Static export untuk GitHub Pages
-  basePath: process.env.NODE_ENV === 'production' ? '/Ecommerce1' : '', // Base path sesuai repository name
+  // Hanya enable static export di production jika diperlukan
+  // Untuk development, API routes harus bekerja
+  ...(process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true' ? { output: 'export' } : {}),
+  basePath: process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true' ? '/Ecommerce1' : '', // Base path sesuai repository name
   trailingSlash: true, // Tambahkan trailing slash untuk kompatibilitas GitHub Pages
   skipTrailingSlashRedirect: true,
   
@@ -74,6 +76,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '**.stockx.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'senikersku.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.senikersku.com',
       },
     ],
     unoptimized: true, // Wajib true untuk static export

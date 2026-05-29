@@ -30,10 +30,34 @@ export default function Navbar() {
 	}, [userMenuOpen]);
 
 	const handleLogout = async () => {
-		await fetch("/api/auth/logout", { method: "POST" });
-		refresh();
-		router.push("/");
-		setUserMenuOpen(false);
+		try {
+			const res = await fetch("/api/auth/logout", { 
+				method: "POST",
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (res.ok) {
+				// Clear user state immediately
+				await refresh();
+				// Force page reload to clear all state
+				window.location.href = "/";
+			} else {
+				console.error("Logout failed:", await res.text());
+				// Still try to clear local state and redirect
+				await refresh();
+				window.location.href = "/";
+			}
+		} catch (error) {
+			console.error("Error during logout:", error);
+			// Still try to clear local state and redirect
+			await refresh();
+			window.location.href = "/";
+		} finally {
+			setUserMenuOpen(false);
+		}
 	};
 
 	return (

@@ -25,10 +25,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const fetchUser = async () => {
 		setLoading(true);
 		try {
-			const res = await fetch("/api/auth/me");
+			const res = await fetch("/api/auth/me", {
+				cache: 'no-store',
+				credentials: 'include'
+			});
 			const data = await res.json();
-			setUser(data.user);
-		} catch {
+			if (data.user) {
+				setUser(data.user);
+			} else {
+				setUser(null);
+			}
+		} catch (error) {
+			console.error("Error fetching user:", error);
 			setUser(null);
 		} finally {
 			setLoading(false);
