@@ -42,17 +42,17 @@ export default function CartPage() {
 				<div className="grid grid-cols-1 gap-8 md:grid-cols-3">
 					<div className="md:col-span-2 space-y-4">
 						{items.map((i) => (
-							<div key={i.id} className="flex items-center gap-4 rounded-lg border p-4 dark:border-zinc-800">
+							<div key={i.id} className="flex flex-wrap items-center gap-4 rounded-xl border p-4 dark:border-zinc-800 sm:flex-nowrap">
 								<div className="h-20 w-20 rounded-lg border bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
 									{i.image && (
-										<img src={i.image} alt={i.title} className="h-full w-full rounded-lg object-cover" />
+										<img src={i.image} alt={i.title} className="h-full w-full rounded-lg object-contain p-1" />
 									)}
 								</div>
 								<div className="flex-1">
 									<p className="font-medium">{i.title}</p>
 									<p className="text-sm text-zinc-600 dark:text-zinc-400">{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(i.price)}</p>
 								</div>
-								<div className="flex items-center gap-3">
+								<div className="flex w-full items-center justify-end gap-3 sm:w-auto">
 									<input type="number" min={1} value={i.qty} onChange={(e) => setQty(i.id, Math.max(1, Number(e.target.value) || 1))} className="h-8 w-16 rounded border px-2 text-center dark:border-zinc-700 dark:bg-zinc-900" />
 									<p className="w-32 text-right font-semibold">{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(i.price * i.qty)}</p>
 									<button onClick={() => remove(i.id)} className="rounded px-3 py-1 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">Hapus</button>

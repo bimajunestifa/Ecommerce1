@@ -1,11 +1,10 @@
 "use client";
-import { useAuth } from "@/components/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Order, TrackingHistory } from "@/lib/types";
 import { formatIDR } from "@/lib/products";
 import Link from "next/link";
 import { BackButton } from "@/components/BackButton";
+import { getLocalOrders } from "@/lib/localOrders";
 
 const statusLabels: Record<string, string> = {
 	pending: "Menunggu Pembayaran",
@@ -26,41 +25,9 @@ const statusColors: Record<string, string> = {
 };
 
 export default function OrdersPage() {
-	const { user, loading } = useAuth();
-	const router = useRouter();
-	const [orders, setOrders] = useState<Order[]>([]);
+	const [orders] = useState<Order[]>(() => getLocalOrders());
 	const [filterStatus, setFilterStatus] = useState<string>("all");
 	const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
-
-	useEffect(() => {
-		if (!loading && !user) {
-			router.push("/login");
-		}
-	}, [user, loading, router]);
-
-	useEffect(() => {
-		if (user) {
-			fetchOrders();
-		}
-	}, [user]);
-
-	const fetchOrders = async () => {
-		try {
-			const res = await fetch("/api/orders");
-			const data = await res.json();
-			setOrders(data.orders || []);
-		} catch (error) {
-			console.error("Error fetching orders:", error);
-		}
-	};
-
-	if (loading) {
-		return <div className="mx-auto max-w-7xl px-4 py-16 text-center">Memuat...</div>;
-	}
-
-	if (!user) {
-		return null;
-	}
 
 	const filteredOrders = filterStatus === "all" 
 		? orders 

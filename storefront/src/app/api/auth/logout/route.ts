@@ -7,9 +7,7 @@ export async function POST() {
 	try {
 		const cookieStore = await cookies();
 		// Delete cookie with same path as when it was set
-		cookieStore.delete("auth-token", {
-			path: "/",
-		});
+		cookieStore.delete({ name: "auth-token", path: "/" });
 		return NextResponse.json({ 
 			message: "Logout berhasil" 
 		}, {

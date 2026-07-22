@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthContext";
 import { formatIDR } from "@/lib/products";
 import Link from "next/link";
 import { Modal } from "@/components/Modal";
 import { Toast } from "@/components/Toast";
 import { BackButton } from "@/components/BackButton";
+import { getLocalOrder, updateLocalOrder } from "@/lib/localOrders";
 
 type Order = {
 	id: string;
@@ -56,7 +56,6 @@ const bankAccounts = [
 export default function PaymentClient() {
 	const params = useParams();
 	const router = useRouter();
-	const { user, loading: authLoading } = useAuth();
 	const [order, setOrder] = useState<Order | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [uploading, setUploading] = useState(false);
@@ -67,29 +66,9 @@ export default function PaymentClient() {
 	const [showConfirmModal, setShowConfirmModal] = useState(false);
 
 	useEffect(() => {
-		if (!authLoading && !user) {
-			router.push("/login");
-			return;
-		}
-
-		if (user && params.orderId) {
-			fetchOrder();
-		}
-	}, [user, authLoading, params.orderId, router]);
-
-	const fetchOrder = async () => {
-		try {
-			const res = await fetch(`/api/orders/${params.orderId}`);
-			if (res.ok) {
-				const data = await res.json();
-				setOrder(data.order);
-			}
-		} catch (error) {
-			console.error("Error fetching order:", error);
-		} finally {
-			setLoading(false);
-		}
-	};
+		if (params.orderId) setOrder(getLocalOrder(String(params.orderId)) || null);
+		setLoading(false);
+	}, [params.orderId]);
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files && e.target.files[0]) {
@@ -127,55 +106,21 @@ export default function PaymentClient() {
 
 		setUploading(true);
 		try {
-			// Update order status to paid
-			const res = await fetch(`/api/orders/${order.id}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ status: "paid" }),
-			});
-
-			const contentType = res.headers.get("content-type");
-			if (!contentType || !contentType.includes("application/json")) {
-				const text = await res.text();
-				console.error("Non-JSON response:", text.substring(0, 200));
-				setToast({ message: "Server mengembalikan response yang tidak valid", type: "error" });
-				setTimeout(() => setToast(null), 3000);
-				setUploading(false);
-				return;
-			}
-
-			const data = await res.json();
-
-			if (res.ok) {
-				setToast({ message: "Pembayaran berhasil dikonfirmasi! Pesanan Anda sedang diproses.", type: "success" });
-				setTimeout(() => {
-					router.push("/orders");
-				}, 2000);
-			} else {
-				const errorMsg = data.error || data.details || "Gagal mengkonfirmasi pembayaran";
-				setToast({ message: errorMsg, type: "error" });
-				setTimeout(() => setToast(null), 3000);
-			}
-		} catch (error) {
-			console.error("Error confirming payment:", error);
-			setToast({ message: "Terjadi kesalahan saat mengkonfirmasi pembayaran", type: "error" });
-			setTimeout(() => setToast(null), 3000);
+			updateLocalOrder(order.id, { status: "paid", note: note || undefined });
+			setToast({ message: "Pembayaran berhasil dikonfirmasi! Pesanan Anda sedang diproses.", type: "success" });
+			setTimeout(() => router.push("/orders"), 1200);
 		} finally {
 			setUploading(false);
 			setShowConfirmModal(false);
 		}
 	};
 
-	if (authLoading || loading) {
+	if (loading) {
 		return (
 			<div className="mx-auto max-w-4xl px-4 py-16 text-center">
 				<p>Memuat...</p>
 			</div>
 		);
-	}
-
-	if (!user) {
-		return null;
 	}
 
 	if (!order) {
@@ -273,7 +218,7 @@ export default function PaymentClient() {
 					<li>Transfer ke salah satu rekening di atas</li>
 					<li>Pastikan nominal transfer sesuai (tidak kurang, tidak lebih)</li>
 					<li>Simpan bukti transfer Anda</li>
-					<li>Klik tombol "Konfirmasi Pembayaran" setelah transfer</li>
+					<li>Klik tombol &quot;Konfirmasi Pembayaran&quot; setelah transfer</li>
 				</ol>
 			</div>
 

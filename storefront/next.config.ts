@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+	turbopack: { root: process.cwd() },
   // Hanya enable static export di production jika diperlukan
   // Untuk development, API routes harus bekerja
   ...(process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true' ? { output: 'export' } : {}),

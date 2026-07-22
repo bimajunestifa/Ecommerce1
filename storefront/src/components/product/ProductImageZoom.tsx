@@ -131,7 +131,7 @@ export default function ProductImageZoom({ images, title }: ProductImageZoomProp
 								<img
 									src={getHighQualityImage(img)}
 									alt={`${title} ${idx + 1}`}
-									className="h-full w-full object-cover"
+									className="h-full w-full object-contain bg-zinc-50 p-1 dark:bg-zinc-900"
 									loading="lazy"
 								/>
 							</button>

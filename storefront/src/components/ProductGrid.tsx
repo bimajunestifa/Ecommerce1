@@ -7,7 +7,7 @@ export default async function ProductGrid() {
 	const featuredProducts = products.filter(p => p.featured !== false).slice(0, 8);
 
 	return (
-		<section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+		<section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
 			<div className="mb-6 flex items-end justify-between">
 				<h2 className="text-xl font-semibold tracking-tight">Produk Unggulan</h2>
 				<a href="/products" className="text-sm font-medium underline-offset-4 hover:underline">Lihat semua</a>
@@ -17,7 +17,7 @@ export default async function ProductGrid() {
 					<p className="text-zinc-600 dark:text-zinc-400">Belum ada produk</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+				<div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
 					{featuredProducts.map((p) => (
 						<ProductCard key={p.id} product={p} />
 					))}

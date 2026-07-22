@@ -1,15 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthContext";
-import Link from "next/link";
 import ImageURLHelper from "@/components/ImageURLHelper";
 import { BackButton } from "@/components/BackButton";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { upsertCmsProduct } from "@/lib/localCms";
+import type { Product } from "@/lib/types";
 
 export default function NewProductPage() {
 	const router = useRouter();
-	const { user } = useAuth();
 	const [form, setForm] = useState({
 		title: "",
 		description: "",
@@ -25,26 +24,19 @@ export default function NewProductPage() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	if (user && user.role !== "admin") {
-		router.push("/");
-		return null;
-	}
-
 	async function onSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await fetch("/api/products", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
+			const product: Product = {
+					id: `product-${Date.now()}`,
 					...form,
 					price: Number(form.price),
 					originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
 					stock: Number(form.stock) || 100,
 					featured: form.featured,
-					navCategory: form.navCategory,
+					navCategory: form.navCategory as Product["navCategory"],
 					sold: 0,
 					rating: 0,
 					reviewCount: 0,
@@ -53,12 +45,11 @@ export default function NewProductPage() {
 						name: "Bima Store",
 						rating: 4.8,
 					},
-				}),
-			});
-			if (!res.ok) throw new Error((await res.json()).error ?? "Gagal menyimpan");
+			};
+			upsertCmsProduct(product);
 			router.push("/admin/products");
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : "Gagal menyimpan produk");
 		} finally {
 			setLoading(false);
 		}

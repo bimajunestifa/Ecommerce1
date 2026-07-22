@@ -1,22 +1,21 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/components/AuthContext";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatIDR } from "@/lib/products";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { getLocalOrders } from "@/lib/localOrders";
+import { getCmsUsers, initializeCmsProducts } from "@/lib/localCms";
+import type { Order } from "@/lib/types";
 
 type Stats = {
 	totalProducts: number;
 	totalOrders: number;
 	totalUsers: number;
 	totalRevenue: number;
-	recentOrders: any[];
+	recentOrders: Order[];
 };
 
 export default function AdminDashboard() {
-	const { user, loading: authLoading } = useAuth();
-	const router = useRouter();
 	const [stats, setStats] = useState<Stats>({
 		totalProducts: 0,
 		totalOrders: 0,
@@ -27,40 +26,23 @@ export default function AdminDashboard() {
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		if (!authLoading && (!user || user.role !== "admin")) {
-			router.push("/");
-			return;
-		}
-
-		if (user && user.role === "admin") {
-			fetchStats();
-		}
-	}, [user, authLoading, router]);
+		void fetchStats();
+	}, []);
 
 	const fetchStats = async () => {
 		try {
 			// Fetch products
 			const productsRes = await fetch("/api/products");
-			const products = await productsRes.json();
+			const products = initializeCmsProducts(await productsRes.json());
 
 			// Fetch orders
-			const ordersRes = await fetch("/api/orders/all");
-			const ordersData = await ordersRes.json();
-			const orders = ordersData.orders || [];
+			const orders = getLocalOrders();
 
-			// Fetch users (need to create this endpoint)
-			const usersRes = await fetch("/api/admin/users");
-			let users = [];
-			try {
-				const usersData = await usersRes.json();
-				users = usersData.users || [];
-			} catch {
-				// If endpoint doesn't exist, we'll skip it
-			}
+			const users = getCmsUsers();
 
 			const totalRevenue = orders
-				.filter((o: any) => o.status === "delivered" || o.status === "paid")
-				.reduce((sum: number, o: any) => sum + o.total, 0);
+				.filter((order) => order.status === "delivered" || order.status === "paid")
+				.reduce((sum, order) => sum + order.total, 0);
 
 			setStats({
 				totalProducts: products.length || 0,
@@ -76,16 +58,12 @@ export default function AdminDashboard() {
 		}
 	};
 
-	if (authLoading || loading) {
+	if (loading) {
 		return (
 			<div className="mx-auto max-w-7xl px-4 py-16 text-center">
 				<p>Memuat...</p>
 			</div>
 		);
-	}
-
-	if (!user || user.role !== "admin") {
-		return null;
 	}
 
 	return (
@@ -224,7 +202,7 @@ export default function AdminDashboard() {
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-										{stats.recentOrders.map((order: any) => (
+										{stats.recentOrders.map((order) => (
 											<tr key={order.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900">
 												<td className="px-4 py-3 text-sm font-mono">{order.id.substring(0, 8)}...</td>
 												<td className="px-4 py-3 text-sm font-semibold">{formatIDR(order.total)}</td>

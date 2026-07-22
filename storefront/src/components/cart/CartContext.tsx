@@ -6,6 +6,7 @@ export type CartItem = { id: string; title: string; price: number; image: string
 type CartState = {
 	items: CartItem[];
 	add: (item: Omit<CartItem, "qty">, qty?: number) => void;
+	buyNow: (item: Omit<CartItem, "qty">, qty?: number) => void;
 	remove: (id: string) => void;
 	setQty: (id: string, qty: number) => void;
 	clear: () => void;
@@ -18,17 +19,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 	const [items, setItems] = useState<CartItem[]>([]);
 
 	useEffect(() => {
-		try {
-			const raw = localStorage.getItem("cart:v1");
-			if (raw) setItems(JSON.parse(raw));
-		} catch {}
+		queueMicrotask(() => {
+			try {
+				const raw = localStorage.getItem("cart:v1");
+				if (raw) setItems(JSON.parse(raw));
+			} catch {}
+		});
 	}, []);
 
-	useEffect(() => {
-		try {
-			localStorage.setItem("cart:v1", JSON.stringify(items));
-		} catch {}
-	}, [items]);
+	function save(next: CartItem[]) {
+		try { localStorage.setItem("cart:v1", JSON.stringify(next)); } catch {}
+		return next;
+	}
 
 	const total = useMemo(() => items.reduce((s, i) => s + i.price * i.qty, 0), [items]);
 
@@ -38,26 +40,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 			if (idx >= 0) {
 				const next = [...prev];
 				next[idx] = { ...next[idx], qty: next[idx].qty + qty };
-				return next;
+				return save(next);
 			}
-			return [...prev, { ...item, qty }];
+			const next = [...prev, { ...item, qty }];
+			return save(next);
 		});
 	}
 
+	function buyNow(item: Omit<CartItem, "qty">, qty = 1) {
+		const next = [{ ...item, qty }];
+		save(next);
+		setItems(next);
+	}
+
 	function remove(id: string) {
-		setItems((prev) => prev.filter((i) => i.id !== id));
+		setItems((prev) => save(prev.filter((i) => i.id !== id)));
 	}
 
 	function setQty(id: string, qty: number) {
-		setItems((prev) => prev.map((i) => (i.id === id ? { ...i, qty } : i)));
+		setItems((prev) => save(prev.map((i) => (i.id === id ? { ...i, qty } : i))));
 	}
 
 	function clear() {
+		save([]);
 		setItems([]);
 	}
 
 	return (
-		<CartCtx.Provider value={{ items, add, remove, setQty, clear, total }}>{children}</CartCtx.Provider>
+		<CartCtx.Provider value={{ items, add, buyNow, remove, setQty, clear, total }}>{children}</CartCtx.Provider>
 	);
 }
 

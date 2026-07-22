@@ -1,11 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/components/AuthContext";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState } from "react";
 import { formatIDR } from "@/lib/products";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { ConfirmModal } from "@/components/Modal";
+import { getLocalOrders, updateLocalOrder } from "@/lib/localOrders";
 
 type Order = {
 	id: string;
@@ -50,9 +48,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function AdminOrdersPage() {
-	const { user, loading } = useAuth();
-	const router = useRouter();
-	const [orders, setOrders] = useState<Order[]>([]);
+	const [orders, setOrders] = useState<Order[]>(() => getLocalOrders());
 	const [filterStatus, setFilterStatus] = useState<string>("all");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [confirmModal, setConfirmModal] = useState<{
@@ -62,93 +58,18 @@ export default function AdminOrdersPage() {
 	}>({ isOpen: false, orderId: "", newStatus: "" });
 	const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-	useEffect(() => {
-		if (!loading && !user) {
-			router.push("/login");
-		} else if (user && user.role !== "admin") {
-			router.push("/");
-		}
-	}, [user, loading, router]);
-
-	useEffect(() => {
-		if (user && user.role === "admin") {
-			fetchAllOrders();
-		}
-	}, [user]);
-
-	const fetchAllOrders = async () => {
-		try {
-			const res = await fetch("/api/orders/all");
-			if (!res.ok) return;
-			const data = await res.json();
-			setOrders(data.orders || []);
-		} catch (error) {
-			console.error("Error fetching orders:", error);
-		}
-	};
-
 	const handleStatusChange = (orderId: string, newStatus: string) => {
 		setConfirmModal({ isOpen: true, orderId, newStatus });
 	};
 
 	const updateOrderStatus = async () => {
-		try {
-			const res = await fetch(`/api/orders/${confirmModal.orderId}`, {
-				method: "PATCH",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ status: confirmModal.newStatus }),
-			});
-
-			// Cek content type sebelum parse JSON
-			const contentType = res.headers.get("content-type");
-			if (!contentType || !contentType.includes("application/json")) {
-				const text = await res.text();
-				console.error("Non-JSON response:", text.substring(0, 200));
-				setToast({ 
-					message: "Server mengembalikan response yang tidak valid. Silakan restart server development.", 
-					type: "error" 
-				});
-				setTimeout(() => setToast(null), 5000);
-				return;
-			}
-
-			let data;
-			try {
-				data = await res.json();
-			} catch (jsonError) {
-				console.error("Error parsing JSON:", jsonError);
-				setToast({ 
-					message: "Gagal memparse response dari server. Silakan restart server.", 
-					type: "error" 
-				});
-				setTimeout(() => setToast(null), 5000);
-				return;
-			}
-
-			if (res.ok) {
-				setToast({ message: "Status pesanan berhasil diupdate", type: "success" });
-				fetchAllOrders();
-				setTimeout(() => setToast(null), 3000);
-			} else {
-				const errorMessage = data.error || data.details || "Gagal mengupdate status pesanan";
-				console.error("Update order error:", errorMessage, data);
-				setToast({ message: errorMessage, type: "error" });
-				setTimeout(() => setToast(null), 3000);
-			}
-		} catch (error) {
-			console.error("Error updating order:", error);
-			setToast({ message: "Terjadi kesalahan saat mengupdate status. Silakan coba lagi.", type: "error" });
-			setTimeout(() => setToast(null), 3000);
-		}
+		const status = confirmModal.newStatus as "pending" | "paid" | "processing" | "shipped" | "delivered" | "cancelled";
+		updateLocalOrder(confirmModal.orderId, { status });
+		setOrders(getLocalOrders());
+		setConfirmModal({ isOpen: false, orderId: "", newStatus: "" });
+		setToast({ message: "Status pesanan berhasil diperbarui", type: "success" });
+		setTimeout(() => setToast(null), 3000);
 	};
-
-	if (loading) {
-		return <div className="mx-auto max-w-7xl px-4 py-16 text-center">Memuat...</div>;
-	}
-
-	if (!user || user.role !== "admin") {
-		return null;
-	}
 
 	const filteredOrders = orders.filter((order) => {
 		const matchesStatus = filterStatus === "all" || order.status === filterStatus;

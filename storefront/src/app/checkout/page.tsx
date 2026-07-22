@@ -1,339 +1,153 @@
 "use client";
-import { useCart } from "@/components/cart/CartContext";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthContext";
-import { useState, useEffect } from "react";
-import { formatIDR } from "@/lib/products";
-import { Modal } from "@/components/Modal";
+
 import { BackButton } from "@/components/BackButton";
+import { useCart } from "@/components/cart/CartContext";
+import { createLocalOrder } from "@/lib/localOrders";
+import { getCmsSettings } from "@/lib/localCms";
+import { formatIDR } from "@/lib/products";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+
+const couriers = [
+	{ id: "regular", name: "Reguler", detail: "J&T / JNE / SiCepat · 2-4 hari", fee: 15000 },
+	{ id: "hemat", name: "Hemat", detail: "Pengiriman ekonomis · 4-7 hari", fee: 8000 },
+	{ id: "instant", name: "Instant", detail: "GoSend / GrabExpress · hari ini", fee: 35000 },
+];
+
+const payments = [
+	{ id: "bank_transfer", name: "Transfer Bank", detail: "BCA, Mandiri, BRI, BNI" },
+	{ id: "e_wallet", name: "E-Wallet", detail: "GoPay, OVO, DANA, ShopeePay" },
+	{ id: "cod", name: "Bayar di Tempat (COD)", detail: "Bayar tunai saat paket diterima" },
+];
+
+type AddressForm = { name: string; phone: string; address: string; city: string; postalCode: string };
 
 export default function CheckoutPage() {
-	const { items, total, clear } = useCart();
-	const { user } = useAuth();
+	const { items, total: subtotal, clear } = useCart();
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
-	const [shippingAddress, setShippingAddress] = useState({
-		name: "",
-		phone: "",
-		address: "",
-		city: "",
-		postalCode: "",
-	});
+	const [courier, setCourier] = useState(couriers[0]);
 	const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
-	const [errorModal, setErrorModal] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
+	const [voucher, setVoucher] = useState("");
+	const [voucherApplied, setVoucherApplied] = useState(false);
+	const [voucherMessage, setVoucherMessage] = useState("");
+	const [note, setNote] = useState("");
+	const [cmsSettings] = useState(() => getCmsSettings());
 	const [errors, setErrors] = useState<Record<string, string>>({});
-
-	useEffect(() => {
-		if (!user && !loading) {
-			router.push("/login");
-		}
-	}, [user, loading, router]);
-
-	async function placeOrder() {
-		if (!user) {
-			router.push("/login");
-			return;
-		}
-
-		// Validasi form
-		const newErrors: Record<string, string> = {};
-		if (!shippingAddress.name) newErrors.name = "Nama penerima harus diisi";
-		if (!shippingAddress.phone) newErrors.phone = "Nomor telepon harus diisi";
-		if (!shippingAddress.address) newErrors.address = "Alamat harus diisi";
-		if (!shippingAddress.city) newErrors.city = "Kota harus diisi";
-		if (!shippingAddress.postalCode) newErrors.postalCode = "Kode pos harus diisi";
-
-		if (Object.keys(newErrors).length > 0) {
-			setErrors(newErrors);
-			setErrorModal({ isOpen: true, message: "Mohon lengkapi semua field alamat pengiriman" });
-			return;
-		}
-
-		if (items.length === 0) {
-			setErrorModal({ isOpen: true, message: "Keranjang Anda kosong" });
-			return;
-		}
-
-		setErrors({});
-		setLoading(true);
-		
+	const [address, setAddress] = useState<AddressForm>(() => {
+		const empty: AddressForm = { name: "", phone: "", address: "", city: "", postalCode: "" };
+		if (typeof window === "undefined") return empty;
 		try {
-			const res = await fetch("/api/orders", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					items: items.map((item) => ({
-						productId: item.id,
-						title: item.title,
-						image: item.image,
-						price: item.price,
-						quantity: item.qty,
-					})),
-					total,
-					shippingAddress: {
-						...shippingAddress,
-						id: `addr-${Date.now()}`,
-						isDefault: false,
-					},
-					paymentMethod,
-				}),
-			});
+			const saved = localStorage.getItem("bimastore:checkout-address");
+			return saved ? { ...empty, ...JSON.parse(saved) } : empty;
+		} catch { return empty; }
+	});
 
-			const data = await res.json();
+	const discount = voucherApplied ? Math.min(Math.round(subtotal * (cmsSettings.voucherPercent / 100)), cmsSettings.maxDiscount) : 0;
+	const serviceFee = subtotal > 0 ? 1000 : 0;
+	const grandTotal = useMemo(
+		() => Math.max(0, subtotal + courier.fee + serviceFee - discount),
+		[subtotal, courier.fee, serviceFee, discount],
+	);
 
-			if (res.ok) {
-				clear();
-				// Redirect ke halaman pembayaran jika bank transfer
-				if (paymentMethod === "bank_transfer") {
-					router.push(`/payment/${data.order.id}`);
-				} else {
-					router.push("/checkout/success");
-				}
-			} else {
-				const errorMessage = data.error || data.details || "Gagal membuat pesanan. Silakan coba lagi.";
-				setErrorModal({ isOpen: true, message: errorMessage });
-			}
-		} catch (error) {
-			console.error("Error placing order:", error);
-			setErrorModal({ 
-				isOpen: true, 
-				message: "Terjadi kesalahan saat memproses pesanan. Silakan coba lagi atau hubungi customer service." 
-			});
-		} finally {
-			setLoading(false);
+	function updateAddress(field: keyof typeof address, value: string) {
+		setAddress((current) => ({ ...current, [field]: value }));
+		setErrors((current) => ({ ...current, [field]: "" }));
+	}
+
+	function applyVoucher() {
+		if (voucher.trim().toUpperCase() === cmsSettings.voucherCode.toUpperCase()) {
+			setVoucherApplied(true);
+			setVoucherMessage(`Voucher ${cmsSettings.voucherCode} berhasil dipakai`);
+		} else {
+			setVoucherApplied(false);
+			setVoucherMessage(`Kode voucher tidak valid. Coba ${cmsSettings.voucherCode}`);
 		}
 	}
 
-	if (!user) {
-		return null;
+	function placeOrder() {
+		const nextErrors: Record<string, string> = {};
+		if (!address.name.trim()) nextErrors.name = "Nama penerima wajib diisi";
+		if (!/^08\d{8,11}$/.test(address.phone.replace(/\s/g, ""))) nextErrors.phone = "Gunakan nomor Indonesia yang valid";
+		if (address.address.trim().length < 10) nextErrors.address = "Tulis alamat lebih lengkap";
+		if (!address.city.trim()) nextErrors.city = "Kota/kabupaten wajib diisi";
+		if (!/^\d{5}$/.test(address.postalCode)) nextErrors.postalCode = "Kode pos harus 5 angka";
+		if (items.length === 0) nextErrors.cart = "Keranjang masih kosong";
+		setErrors(nextErrors);
+		if (Object.keys(nextErrors).length) {
+			window.scrollTo({ top: 0, behavior: "smooth" });
+			return;
+		}
+
+		setLoading(true);
+		localStorage.setItem("bimastore:checkout-address", JSON.stringify(address));
+		const now = new Date();
+		const order = createLocalOrder({
+			userId: "guest-demo",
+			items: items.map((item) => ({ productId: item.id, title: item.title, image: item.image, price: item.price, quantity: item.qty })),
+			subtotal,
+			shippingFee: courier.fee,
+			serviceFee,
+			discount,
+			total: grandTotal,
+			status: paymentMethod === "cod" ? "processing" : "pending",
+			shippingAddress: { ...address, id: `addr-${now.getTime()}`, isDefault: true },
+			paymentMethod,
+			courier: courier.name,
+			voucherCode: voucherApplied ? cmsSettings.voucherCode : undefined,
+			note: note || undefined,
+		});
+		clear();
+		setTimeout(() => router.push(paymentMethod === "bank_transfer" ? `/payment/${order.id}` : `/checkout/success?order=${order.id}`), 400);
 	}
+
+	const fieldClass = (key: string) => `w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100 dark:bg-zinc-950 dark:focus:ring-orange-950 ${errors[key] ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"}`;
 
 	return (
-		<div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-			<div className="mb-6">
+		<div className="min-h-screen bg-zinc-50 py-8 dark:bg-zinc-950">
+			<div className="mx-auto max-w-6xl px-4 sm:px-6">
 				<BackButton href="/cart" label="Kembali ke Keranjang" />
-			</div>
-			<h1 className="mb-6 text-2xl font-bold">Checkout</h1>
-			<div className="grid gap-8 md:grid-cols-2">
-				<div className="space-y-6">
-					<div className="rounded-lg border p-6 dark:border-zinc-800">
-						<h2 className="mb-4 text-lg font-semibold">Alamat Pengiriman</h2>
-						<div className="space-y-4">
-							<div>
-								<label className="mb-1 block text-sm font-medium">Nama Penerima</label>
-								<input
-									type="text"
-									value={shippingAddress.name}
-									onChange={(e) => {
-										setShippingAddress({ ...shippingAddress, name: e.target.value });
-										if (errors.name) setErrors({ ...errors, name: "" });
-									}}
-									required
-									className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
-										errors.name ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-									}`}
-								/>
-								{errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
-							</div>
-							<div>
-								<label className="mb-1 block text-sm font-medium">No. Telepon</label>
-								<input
-									type="tel"
-									value={shippingAddress.phone}
-									onChange={(e) => {
-										setShippingAddress({ ...shippingAddress, phone: e.target.value });
-										if (errors.phone) setErrors({ ...errors, phone: "" });
-									}}
-									required
-									className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
-										errors.phone ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-									}`}
-								/>
-								{errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
-							</div>
-							<div>
-								<label className="mb-1 block text-sm font-medium">Alamat</label>
-								<textarea
-									value={shippingAddress.address}
-									onChange={(e) => {
-										setShippingAddress({ ...shippingAddress, address: e.target.value });
-										if (errors.address) setErrors({ ...errors, address: "" });
-									}}
-									required
-									rows={3}
-									className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
-										errors.address ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-									}`}
-								/>
-								{errors.address && <p className="mt-1 text-xs text-red-500">{errors.address}</p>}
-							</div>
-							<div className="grid grid-cols-2 gap-4">
-								<div>
-									<label className="mb-1 block text-sm font-medium">Kota</label>
-									<input
-										type="text"
-										value={shippingAddress.city}
-										onChange={(e) => {
-											setShippingAddress({ ...shippingAddress, city: e.target.value });
-											if (errors.city) setErrors({ ...errors, city: "" });
-										}}
-										required
-										className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
-											errors.city ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-										}`}
-									/>
-									{errors.city && <p className="mt-1 text-xs text-red-500">{errors.city}</p>}
-								</div>
-								<div>
-									<label className="mb-1 block text-sm font-medium">Kode Pos</label>
-									<input
-										type="text"
-										value={shippingAddress.postalCode}
-										onChange={(e) => {
-											setShippingAddress({ ...shippingAddress, postalCode: e.target.value });
-											if (errors.postalCode) setErrors({ ...errors, postalCode: "" });
-										}}
-										required
-										className={`w-full rounded-lg border px-4 py-2 dark:bg-zinc-900 ${
-											errors.postalCode ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-										}`}
-									/>
-									{errors.postalCode && <p className="mt-1 text-xs text-red-500">{errors.postalCode}</p>}
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div className="rounded-lg border p-6 dark:border-zinc-800">
-						<h2 className="mb-4 text-lg font-semibold">Metode Pembayaran</h2>
-						<div className="space-y-2">
-							<label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900">
-								<input
-									type="radio"
-									name="payment"
-									value="bank_transfer"
-									checked={paymentMethod === "bank_transfer"}
-									onChange={(e) => setPaymentMethod(e.target.value)}
-								/>
-								<span>Transfer Bank</span>
-							</label>
-							<label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900">
-								<input
-									type="radio"
-									name="payment"
-									value="e_wallet"
-									checked={paymentMethod === "e_wallet"}
-									onChange={(e) => setPaymentMethod(e.target.value)}
-								/>
-								<span>E-Wallet</span>
-							</label>
-							<label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900">
-								<input
-									type="radio"
-									name="payment"
-									value="cod"
-									checked={paymentMethod === "cod"}
-									onChange={(e) => setPaymentMethod(e.target.value)}
-								/>
-								<span>Cash on Delivery (COD)</span>
-							</label>
-						</div>
-					</div>
+				<div className="my-6 flex items-center justify-between">
+					<div><h1 className="text-2xl font-bold">Checkout</h1><p className="mt-1 text-sm text-zinc-500">Lengkapi pesanan dengan aman</p></div>
+					<span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Mode demo · tanpa database</span>
 				</div>
 
-				<div>
-					<div className="rounded-lg border p-6 dark:border-zinc-800">
-						<h2 className="mb-4 text-lg font-semibold">Ringkasan Pesanan</h2>
-						<ul className="divide-y dark:divide-zinc-800">
-							{items.map((i) => (
-								<li key={i.id} className="flex items-center gap-4 py-3">
-									<div className="h-16 w-16 flex-shrink-0 rounded-lg border bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 overflow-hidden">
-										{i.image ? (
-											<img 
-												src={i.image} 
-												alt={i.title} 
-												className="h-full w-full object-cover" 
-											/>
-										) : (
-											<div className="h-full w-full" />
-										)}
-									</div>
-									<div className="flex-1 min-w-0">
-										<p className="text-sm font-medium line-clamp-2">{i.title}</p>
-										<p className="text-sm text-zinc-600 dark:text-zinc-400">
-											{formatIDR(i.price)} × {i.qty}
-										</p>
-									</div>
-									<p className="text-sm font-semibold whitespace-nowrap">{formatIDR(i.price * i.qty)}</p>
-								</li>
-							))}
-						</ul>
-						<div className="mt-4 space-y-2 border-t border-zinc-200 pt-4 dark:border-zinc-800">
-							<div className="flex items-center justify-between text-sm">
-								<span>Subtotal</span>
-								<span>{formatIDR(total)}</span>
+				<div className="grid items-start gap-6 lg:grid-cols-[1fr_390px]">
+					<div className="space-y-5">
+						<section className="rounded-2xl border bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-black sm:p-6">
+							<div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-orange-100 font-bold text-orange-600">1</span><h2 className="font-semibold">Alamat Pengiriman</h2></div>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<label className="text-sm font-medium">Nama Penerima<input value={address.name} onChange={(e) => updateAddress("name", e.target.value)} placeholder="Nama lengkap" className={`mt-2 ${fieldClass("name")}`} />{errors.name && <span className="mt-1 block text-xs text-red-500">{errors.name}</span>}</label>
+								<label className="text-sm font-medium">Nomor Telepon<input value={address.phone} onChange={(e) => updateAddress("phone", e.target.value.replace(/[^0-9]/g, ""))} placeholder="08xxxxxxxxxx" className={`mt-2 ${fieldClass("phone")}`} />{errors.phone && <span className="mt-1 block text-xs text-red-500">{errors.phone}</span>}</label>
+								<label className="text-sm font-medium sm:col-span-2">Alamat Lengkap<textarea value={address.address} onChange={(e) => updateAddress("address", e.target.value)} placeholder="Nama jalan, nomor rumah, RT/RW, kecamatan" rows={3} className={`mt-2 resize-none ${fieldClass("address")}`} />{errors.address && <span className="mt-1 block text-xs text-red-500">{errors.address}</span>}</label>
+								<label className="text-sm font-medium">Kota / Kabupaten<input value={address.city} onChange={(e) => updateAddress("city", e.target.value)} placeholder="Contoh: Surabaya" className={`mt-2 ${fieldClass("city")}`} />{errors.city && <span className="mt-1 block text-xs text-red-500">{errors.city}</span>}</label>
+								<label className="text-sm font-medium">Kode Pos<input value={address.postalCode} maxLength={5} onChange={(e) => updateAddress("postalCode", e.target.value.replace(/[^0-9]/g, ""))} placeholder="12345" className={`mt-2 ${fieldClass("postalCode")}`} />{errors.postalCode && <span className="mt-1 block text-xs text-red-500">{errors.postalCode}</span>}</label>
 							</div>
-							<div className="flex items-center justify-between text-sm">
-								<span>Ongkir</span>
-								<span>Gratis</span>
-							</div>
-							<div className="flex items-center justify-between text-lg font-semibold">
-								<span>Total</span>
-								<span>{formatIDR(total)}</span>
-							</div>
-						</div>
-						<button
-							onClick={placeOrder}
-							disabled={items.length === 0 || loading}
-							className="mt-6 w-full rounded-lg bg-orange-500 px-6 py-3 font-semibold text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							{loading ? (
-								<span className="flex items-center justify-center gap-2">
-									<svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-									</svg>
-									Memproses...
-								</span>
-							) : (
-								"Buat Pesanan"
-							)}
-						</button>
-						{items.length === 0 && (
-							<p className="mt-2 text-center text-xs text-red-500">Keranjang Anda kosong</p>
-						)}
+						</section>
+
+						<section className="rounded-2xl border bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-black sm:p-6">
+							<div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-orange-100 font-bold text-orange-600">2</span><h2 className="font-semibold">Pilihan Pengiriman</h2></div>
+							<div className="grid gap-3 sm:grid-cols-3">{couriers.map((option) => <button type="button" key={option.id} onClick={() => setCourier(option)} className={`rounded-xl border p-4 text-left transition ${courier.id === option.id ? "border-orange-500 bg-orange-50 ring-1 ring-orange-500 dark:bg-orange-950/20" : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-800"}`}><span className="block text-sm font-semibold">{option.name}</span><span className="mt-1 block text-xs text-zinc-500">{option.detail}</span><span className="mt-3 block text-sm font-semibold text-orange-600">{formatIDR(option.fee)}</span></button>)}</div>
+						</section>
+
+						<section className="rounded-2xl border bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-black sm:p-6">
+							<div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-full bg-orange-100 font-bold text-orange-600">3</span><h2 className="font-semibold">Metode Pembayaran</h2></div>
+							<div className="space-y-3">{payments.filter((option) => option.id !== "cod" || cmsSettings.codEnabled).filter((option) => option.id !== "e_wallet" || cmsSettings.eWalletEnabled).map((option) => <label key={option.id} className={`flex cursor-pointer items-center gap-4 rounded-xl border p-4 ${paymentMethod === option.id ? "border-orange-500 bg-orange-50 dark:bg-orange-950/20" : "border-zinc-200 dark:border-zinc-800"}`}><input type="radio" name="payment" value={option.id} checked={paymentMethod === option.id} onChange={() => setPaymentMethod(option.id)} className="accent-orange-500" /><span><span className="block text-sm font-semibold">{option.name}</span><span className="text-xs text-zinc-500">{option.detail}</span></span></label>)}</div>
+						</section>
 					</div>
+
+					<aside className="rounded-2xl border bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-black lg:sticky lg:top-24">
+						<h2 className="text-lg font-semibold">Ringkasan Pesanan</h2>
+						<div className="my-4 max-h-64 space-y-4 overflow-auto pr-1">{items.map((item) => <div key={item.id} className="flex gap-3"><div className="h-16 w-16 shrink-0 rounded-lg bg-zinc-100 p-1"><img src={item.image} alt={item.title} className="h-full w-full object-contain" /></div><div className="min-w-0 flex-1"><p className="line-clamp-2 text-sm font-medium">{item.title}</p><p className="mt-1 text-xs text-zinc-500">{item.qty} barang</p></div><span className="text-sm font-semibold">{formatIDR(item.price * item.qty)}</span></div>)}</div>
+						<div className="border-y border-zinc-200 py-4 dark:border-zinc-800"><div className="flex gap-2"><input value={voucher} disabled={voucherApplied} onChange={(e) => setVoucher(e.target.value)} placeholder="Kode voucher" className="min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm uppercase dark:border-zinc-700 dark:bg-zinc-950" /><button onClick={applyVoucher} className="rounded-lg border border-orange-500 px-4 text-sm font-semibold text-orange-600">Pakai</button></div>{voucherMessage && <p className={`mt-2 text-xs ${voucherApplied ? "text-green-600" : "text-red-500"}`}>{voucherMessage}</p>}</div>
+						<label className="mt-4 block text-sm font-medium">Catatan untuk Penjual<textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Warna, waktu kirim, atau pesan lain" className="mt-2 w-full resize-none rounded-lg border px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950" /></label>
+						<div className="mt-5 space-y-2 text-sm"><div className="flex justify-between"><span className="text-zinc-500">Subtotal</span><span>{formatIDR(subtotal)}</span></div><div className="flex justify-between"><span className="text-zinc-500">Ongkos kirim</span><span>{formatIDR(courier.fee)}</span></div><div className="flex justify-between"><span className="text-zinc-500">Biaya layanan</span><span>{formatIDR(serviceFee)}</span></div>{discount > 0 && <div className="flex justify-between text-green-600"><span>Diskon voucher</span><span>-{formatIDR(discount)}</span></div>}<div className="mt-3 flex items-end justify-between border-t pt-4 dark:border-zinc-800"><span className="font-semibold">Total Pembayaran</span><span className="text-xl font-bold text-orange-600">{formatIDR(grandTotal)}</span></div></div>
+						{errors.cart && <p className="mt-3 text-center text-sm text-red-500">{errors.cart}</p>}
+						<button onClick={placeOrder} disabled={loading || items.length === 0} className="mt-5 w-full rounded-xl bg-orange-500 px-5 py-3.5 font-bold text-white shadow-lg shadow-orange-500/20 transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50">{loading ? "Memproses Pesanan..." : "Buat Pesanan"}</button>
+						<p className="mt-3 text-center text-xs text-zinc-500">Dengan melanjutkan, Anda menyetujui syarat dan kebijakan BimaStore.</p>
+					</aside>
 				</div>
 			</div>
-
-			{/* Error Modal */}
-			<Modal
-				isOpen={errorModal.isOpen}
-				onClose={() => setErrorModal({ isOpen: false, message: "" })}
-				title="Error"
-				size="sm"
-			>
-				<div className="space-y-4">
-					<div className="flex items-start gap-3">
-						<div className="flex-shrink-0 rounded-full bg-red-100 p-2 dark:bg-red-900/20">
-							<svg className="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
-						</div>
-						<p className="flex-1 text-sm text-zinc-600 dark:text-zinc-400">{errorModal.message}</p>
-					</div>
-					<div className="flex justify-end">
-						<button
-							onClick={() => setErrorModal({ isOpen: false, message: "" })}
-							className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
-						>
-							Mengerti
-						</button>
-					</div>
-				</div>
-			</Modal>
 		</div>
 	);
 }
-
-

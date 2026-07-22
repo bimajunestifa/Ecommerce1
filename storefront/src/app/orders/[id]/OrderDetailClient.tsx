@@ -1,11 +1,10 @@
 "use client";
-import { useAuth } from "@/components/AuthContext";
-import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Order, TrackingHistory } from "@/lib/types";
 import { formatIDR } from "@/lib/products";
 import Link from "next/link";
 import { BackButton } from "@/components/BackButton";
+import { getLocalOrder } from "@/lib/localOrders";
 
 const statusLabels: Record<string, string> = {
 	pending: "Menunggu Pembayaran",
@@ -35,47 +34,11 @@ const statusIcons: Record<string, string> = {
 };
 
 export default function OrderDetailClient() {
-	const { user, loading: authLoading } = useAuth();
-	const router = useRouter();
 	const params = useParams<{ id: string }>();
-	const [order, setOrder] = useState<Order | null>(null);
-	const [loading, setLoading] = useState(true);
+	const order: Order | null = params.id ? getLocalOrder(params.id) || null : null;
 
-	useEffect(() => {
-		if (!authLoading && !user) {
-			router.push("/login");
-		}
-	}, [user, authLoading, router]);
-
-	useEffect(() => {
-		if (user && params.id) {
-			fetchOrder();
-		}
-	}, [user, params.id]);
-
-	const fetchOrder = async () => {
-		try {
-			const res = await fetch(`/api/orders/${params.id}`);
-			if (!res.ok) {
-				router.push("/orders");
-				return;
-			}
-			const data = await res.json();
-			setOrder(data.order);
-		} catch (error) {
-			console.error("Error fetching order:", error);
-			router.push("/orders");
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	if (loading || authLoading) {
-		return <div className="mx-auto max-w-7xl px-4 py-16 text-center">Memuat...</div>;
-	}
-
-	if (!user || !order) {
-		return null;
+	if (!order) {
+		return <div className="mx-auto max-w-xl px-4 py-16 text-center"><p className="mb-4 font-semibold">Pesanan tidak ditemukan di perangkat ini.</p><Link href="/orders" className="text-orange-500 hover:underline">Kembali ke Pesanan Saya</Link></div>;
 	}
 
 	// Generate tracking history if not exists
@@ -85,8 +48,6 @@ export default function OrderDetailClient() {
 		}
 
 		const history: TrackingHistory[] = [];
-		const now = new Date();
-
 		// Pending
 		if (["pending", "paid", "processing", "shipped", "delivered", "cancelled"].includes(order.status)) {
 			history.push({

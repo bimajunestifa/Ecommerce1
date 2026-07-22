@@ -30,12 +30,12 @@ export default function ProductCard({ product }: Props) {
 			href={`/product/${product.id}`}
 			className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:shadow-lg dark:border-zinc-800 dark:bg-black"
 		>
-			<div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+			<div className="relative aspect-square w-full overflow-hidden bg-gradient-to-b from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-950">
 				{product.image ? (
 					<img
 						src={product.image}
 						alt={product.title}
-						className="h-full w-full object-contain p-6 transition-transform duration-300 group-hover:scale-105"
+						className="h-full w-full object-contain p-5 transition-transform duration-300 group-hover:scale-105 sm:p-7"
 						loading="lazy"
 						referrerPolicy="no-referrer-when-downgrade"
 						onError={(e) => {
@@ -60,8 +60,8 @@ export default function ProductCard({ product }: Props) {
 					</span>
 				)}
 			</div>
-			<div className="p-4">
-				<h3 className="line-clamp-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">{product.title}</h3>
+			<div className="flex min-h-40 flex-col p-4">
+				<h3 className="line-clamp-2 min-h-10 text-sm font-medium text-zinc-900 dark:text-zinc-100">{product.title.trim()}</h3>
 				<div className="mt-2 flex items-center gap-2">
 					<StarRating rating={product.rating || 0} />
 					<span className="text-xs text-zinc-600 dark:text-zinc-400">

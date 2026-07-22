@@ -16,6 +16,22 @@ export default function LoginPage() {
 		setLoading(true);
 
 		try {
+			// Akun owner menggunakan sesi keamanan terpisah dari akun pelanggan.
+			if (email.toLowerCase().includes("owner")) {
+				const ownerResponse = await fetch("/api/owner/login", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ email, password }),
+				});
+				const ownerData = await ownerResponse.json();
+				if (ownerResponse.ok) {
+					window.location.href = "/admin/owner";
+					return;
+				}
+				setError(ownerData.error || "Email atau password owner salah");
+				return;
+			}
+
 			const res = await fetch("/api/auth/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -25,10 +41,7 @@ export default function LoginPage() {
 			// Cek content type sebelum parse JSON
 			const contentType = res.headers.get("content-type");
 			if (!contentType || !contentType.includes("application/json")) {
-				const text = await res.text();
-				console.error("Non-JSON response:", text.substring(0, 200));
 				setError("Server mengembalikan response yang tidak valid");
-				setLoading(false);
 				return;
 			}
 
@@ -36,9 +49,7 @@ export default function LoginPage() {
 
 			if (!res.ok) {
 				const errorMsg = data.error || data.details || "Login gagal";
-				console.error("Login error:", errorMsg, data);
 				setError(errorMsg);
-				setLoading(false);
 				return;
 			}
 
@@ -53,7 +64,6 @@ export default function LoginPage() {
 				window.location.href = "/";
 			}
 		} catch (err) {
-			console.error("Login catch error:", err);
 			setError(err instanceof Error ? err.message : "Terjadi kesalahan");
 		} finally {
 			setLoading(false);
@@ -105,6 +115,11 @@ export default function LoginPage() {
 					Daftar
 				</Link>
 			</p>
+			<div className="mt-6 border-t border-zinc-200 pt-5 text-center dark:border-zinc-800">
+				<Link href="/admin/login" className="text-sm font-semibold text-zinc-600 hover:text-orange-500 dark:text-zinc-400">
+					Masuk sebagai Owner →
+				</Link>
+			</div>
 		</div>
 	);
 }

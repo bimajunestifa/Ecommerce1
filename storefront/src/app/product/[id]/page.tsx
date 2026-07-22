@@ -116,7 +116,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
 					<div className="mt-6 flex gap-4">
 						<div className="flex-1">
-							<AddToCart product={{ id: product.id, title: product.title, price: product.price, image: product.image }} />
+							<AddToCart product={{ id: product.id, title: product.title, price: product.price, image: product.image, stock: product.stock, variants: product.variants }} />
 						</div>
 						<WishlistButton productId={product.id} />
 					</div>

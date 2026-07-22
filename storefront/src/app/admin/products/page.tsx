@@ -1,35 +1,25 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/components/AuthContext";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Product } from "@/lib/types";
 import { formatIDR } from "@/lib/products";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { deleteCmsProduct, getCmsProducts, initializeCmsProducts, saveCmsProducts } from "@/lib/localCms";
 
 export default function AdminProductsPage() {
-	const { user, loading: authLoading } = useAuth();
-	const router = useRouter();
 	const [products, setProducts] = useState<Product[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	useEffect(() => {
-		if (!authLoading && (!user || user.role !== "admin")) {
-			router.push("/");
-			return;
-		}
-
-		if (user && user.role === "admin") {
-			fetchProducts();
-		}
-	}, [user, authLoading, router]);
+		void fetchProducts();
+	}, []);
 
 	const fetchProducts = async () => {
 		try {
 			const res = await fetch("/api/products");
 			const data = await res.json();
-			setProducts(data || []);
+			setProducts(initializeCmsProducts(data || []));
 		} catch (error) {
 			console.error("Error fetching products:", error);
 		} finally {
@@ -40,51 +30,22 @@ export default function AdminProductsPage() {
 	const handleDelete = async (productId: string) => {
 		if (!confirm("Yakin ingin menghapus produk ini?")) return;
 
-		try {
-			const res = await fetch(`/api/products/${productId}`, {
-				method: "DELETE",
-			});
-
-			if (res.ok) {
-				fetchProducts();
-			} else {
-				alert("Gagal menghapus produk");
-			}
-		} catch (error) {
-			console.error("Error deleting product:", error);
-			alert("Terjadi kesalahan");
-		}
+		deleteCmsProduct(productId);
+		setProducts(getCmsProducts());
 	};
 
 	const toggleFeatured = async (productId: string, currentFeatured: boolean) => {
-		try {
-			const res = await fetch(`/api/products/${productId}`, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ featured: !currentFeatured }),
-			});
-
-			if (res.ok) {
-				fetchProducts();
-			} else {
-				alert("Gagal mengupdate status featured");
-			}
-		} catch (error) {
-			console.error("Error updating featured:", error);
-			alert("Terjadi kesalahan");
-		}
+		const next = products.map((product) => product.id === productId ? { ...product, featured: !currentFeatured } : product);
+		saveCmsProducts(next);
+		setProducts(next);
 	};
 
-	if (authLoading || loading) {
+	if (loading) {
 		return (
 			<div className="mx-auto max-w-7xl px-4 py-16 text-center">
 				<p>Memuat...</p>
 			</div>
 		);
-	}
-
-	if (!user || user.role !== "admin") {
-		return null;
 	}
 
 	const filteredProducts = products.filter((p) =>

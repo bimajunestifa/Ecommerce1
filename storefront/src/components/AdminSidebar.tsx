@@ -1,36 +1,12 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "./AuthContext";
+import { usePathname } from "next/navigation";
 
 export function AdminSidebar() {
 	const pathname = usePathname();
-	const router = useRouter();
-	const { user, refresh } = useAuth();
-
 	const handleLogout = async () => {
-		try {       
-			const res = await fetch("/api/auth/logout", { 
-				method: "POST",
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-
-			if (res.ok) {
-				await refresh();
-				window.location.href = "/";
-			} else {
-				console.error("Logout failed:", await res.text());
-				await refresh();
-				window.location.href = "/";
-			}
-		} catch (error) {
-			console.error("Error during logout:", error);
-			await refresh();
-			window.location.href = "/";
-		}
+		await fetch("/api/owner/logout", { method: "POST" }).catch(() => null);
+		window.location.href = "/admin/login";
 	};
 
 	const isActive = (path: string) => pathname === path || pathname?.startsWith(path + "/");
@@ -73,12 +49,24 @@ export function AdminSidebar() {
 			),
 		},
 		{
+			href: "/admin/owner",
+			label: "Owner Analytics",
+			icon: <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v18h18M7 16l4-5 4 3 5-7" /></svg>,
+		},
+		{
 			href: "/admin/create-account",
 			label: "Buat Akun",
 			icon: (
 				<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
 				</svg>
+			),
+		},
+		{
+			href: "/admin/cms",
+			label: "Konten & Pengaturan",
+			icon: (
+				<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m12 14a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
 			),
 		},
 	];
@@ -96,7 +84,7 @@ export function AdminSidebar() {
 						</div>
 						<div>
 							<h1 className="text-lg font-bold">Admin Panel</h1>
-							<p className="text-xs text-zinc-600 dark:text-zinc-400">{user?.name || "Admin"}</p>
+							<p className="text-xs text-zinc-600 dark:text-zinc-400">Owner Terverifikasi</p>
 						</div>
 					</Link>
 				</div>

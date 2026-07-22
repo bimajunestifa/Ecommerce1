@@ -8,8 +8,12 @@ const productsPath = path.join(dataDir, "products.json");
 const usersPath = path.join(dataDir, "users.json");
 const ordersPath = path.join(dataDir, "orders.json");
 const reviewsPath = path.join(dataDir, "reviews.json");
+// Default Vercel/demo mode: katalog boleh dibaca, tetapi tidak ada penulisan ke filesystem.
+// Aktifkan hanya untuk pengembangan lokal dengan ENABLE_DATABASE_WRITES=true.
+export const databaseWritesEnabled = process.env.ENABLE_DATABASE_WRITES === "true";
 
 function ensureDataFile() {
+	if (!databaseWritesEnabled) return;
 	if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 	if (!fs.existsSync(productsPath)) {
 		fs.writeFileSync(productsPath, JSON.stringify([], null, 2), "utf-8");
@@ -38,6 +42,7 @@ export function readProducts(): Product[] {
 }
 
 export function writeProducts(products: Product[]) {
+	if (!databaseWritesEnabled) return;
 	ensureDataFile();
 	fs.writeFileSync(productsPath, JSON.stringify(products, null, 2), "utf-8");
 }
@@ -59,6 +64,7 @@ export function readUsers(): User[] {
 }
 
 export function writeUsers(users: User[]) {
+	if (!databaseWritesEnabled) return;
 	ensureDataFile();
 	fs.writeFileSync(usersPath, JSON.stringify(users, null, 2), "utf-8");
 }
@@ -96,6 +102,7 @@ export function readOrders(): Order[] {
 }
 
 export function writeOrders(orders: Order[]) {
+	if (!databaseWritesEnabled) return;
 	ensureDataFile();
 	fs.writeFileSync(ordersPath, JSON.stringify(orders, null, 2), "utf-8");
 }
@@ -134,6 +141,7 @@ export function readReviews(): Review[] {
 }
 
 export function writeReviews(reviews: Review[]) {
+	if (!databaseWritesEnabled) return;
 	ensureDataFile();
 	fs.writeFileSync(reviewsPath, JSON.stringify(reviews, null, 2), "utf-8");
 }

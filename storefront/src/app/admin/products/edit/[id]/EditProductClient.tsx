@@ -1,16 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthContext";
-import Link from "next/link";
 import ImageURLHelper from "@/components/ImageURLHelper";
 import { BackButton } from "@/components/BackButton";
 import { AdminSidebar } from "@/components/AdminSidebar";
+import { deleteCmsProduct, getCmsProducts, upsertCmsProduct } from "@/lib/localCms";
+import type { Product } from "@/lib/types";
 
 export default function EditProductClient() {
 	const params = useParams<{ id: string }>();
 	const router = useRouter();
-	const { user } = useAuth();
 	const [form, setForm] = useState({
 		id: "",
 		title: "",
@@ -28,15 +27,13 @@ export default function EditProductClient() {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (user && user.role !== "admin") {
-			router.push("/");
-			return;
-		}
-
 		(async () => {
-			const res = await fetch(`/api/products/${params.id}`);
-			if (!res.ok) return setError("Produk tidak ditemukan");
-			const p = await res.json();
+			let p = getCmsProducts().find((product) => product.id === params.id);
+			if (!p) {
+				const res = await fetch(`/api/products/${params.id}`);
+				if (res.ok) p = await res.json();
+			}
+			if (!p) return setError("Produk tidak ditemukan");
 			setForm({
 				id: p.id,
 				title: p.title,
@@ -51,29 +48,27 @@ export default function EditProductClient() {
 				featured: p.featured !== false,
 			});
 		})();
-	}, [params.id, user, router]);
+	}, [params.id]);
 
 	async function onSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await fetch(`/api/products/${params.id}`, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
+			const existing = getCmsProducts().find((product) => product.id === params.id);
+			const product: Product = {
+					...(existing || { sold: 0, rating: 0, reviewCount: 0, shop: { id: "shop-1", name: "Bima Store", rating: 4.8 } }),
 					...form,
 					price: Number(form.price),
 					originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
 					stock: Number(form.stock) || 100,
 					featured: form.featured,
-					navCategory: form.navCategory,
-				}),
-			});
-			if (!res.ok) throw new Error((await res.json()).error ?? "Gagal menyimpan");
+					navCategory: form.navCategory as Product["navCategory"],
+			};
+			upsertCmsProduct(product);
 			router.push("/admin/products");
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : "Gagal menyimpan produk");
 		} finally {
 			setLoading(false);
 		}
@@ -83,11 +78,10 @@ export default function EditProductClient() {
 		if (!confirm("Hapus produk ini?")) return;
 		setLoading(true);
 		try {
-			const res = await fetch(`/api/products/${params.id}`, { method: "DELETE" });
-			if (!res.ok) throw new Error("Gagal menghapus");
+			deleteCmsProduct(params.id);
 			router.push("/admin/products");
-		} catch (err: any) {
-			setError(err.message);
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : "Gagal menghapus produk");
 		} finally {
 			setLoading(false);
 		}

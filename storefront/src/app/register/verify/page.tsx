@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthContext";
 
@@ -22,7 +22,7 @@ function formatRemaining(ms: number) {
 	return `${minutes}:${seconds}`;
 }
 
-export default function RegisterVerifyPage() {
+function RegisterVerifyContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const { refresh } = useAuth();
@@ -221,5 +221,13 @@ export default function RegisterVerifyPage() {
 				</Link>
 			</div>
 		</div>
+	);
+}
+
+export default function RegisterVerifyPage() {
+	return (
+		<Suspense fallback={<div className="mx-auto max-w-md px-4 py-16 text-center">Memuat verifikasi OTP...</div>}>
+			<RegisterVerifyContent />
+		</Suspense>
 	);
 }

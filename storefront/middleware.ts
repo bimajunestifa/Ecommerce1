@@ -1,42 +1,30 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { COOKIE_NAME, verifyOwnerSession } from "./src/lib/ownerAuth";
 
-export function middleware(request: NextRequest) {
-	const { pathname } = request.nextUrl;
-	const isAdmin = pathname.startsWith("/admin");
-	const isStaff = pathname.startsWith("/petugas");
-	if (!isAdmin && !isStaff) return NextResponse.next();
+export async function middleware(request: NextRequest) {
+	const { pathname, search } = request.nextUrl;
+	const response = NextResponse.next();
+	setSecurityHeaders(response);
 
-	const user = isAdmin
-		? process.env.BASIC_AUTH_USER ?? "addminn"
-		: process.env.STAFF_AUTH_USER ?? "staff";
-	const pass = isAdmin
-		? process.env.BASIC_AUTH_PASS ?? "admin123"
-		: process.env.STAFF_AUTH_PASS ?? "staff123";
-	const auth = request.headers.get("authorization");
-	if (!auth?.startsWith("Basic ")) return unauthorized();
+	if (!pathname.startsWith("/admin") || pathname === "/admin/login") return response;
+	const authenticated = await verifyOwnerSession(request.cookies.get(COOKIE_NAME)?.value);
+	if (authenticated) return response;
 
-	const [, encoded] = auth.split(" ");
-	try {
-		const decoded = Buffer.from(encoded, "base64").toString("utf-8");
-		const [u, p] = decoded.split(":");
-		if (u === user && p === pass) return NextResponse.next();
-		return unauthorized();
-	} catch {
-		return unauthorized();
-	}
+	const login = new URL("/admin/login", request.url);
+	login.searchParams.set("next", `${pathname}${search}`);
+	const redirect = NextResponse.redirect(login);
+	redirect.cookies.delete(COOKIE_NAME);
+	setSecurityHeaders(redirect);
+	return redirect;
 }
 
-function unauthorized() {
-	return new NextResponse("Unauthorized", {
-		status: 401,
-		headers: { "WWW-Authenticate": "Basic realm=Protected" },
-	});
+function setSecurityHeaders(response: NextResponse) {
+	response.headers.set("X-Frame-Options", "DENY");
+	response.headers.set("X-Content-Type-Options", "nosniff");
+	response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+	response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+	response.headers.set("Content-Security-Policy", "frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
 }
 
-export const config = {
-	matcher: ["/admin/:path*", "/petugas/:path*"],
-};
-
-
-
+export const config = { matcher: ["/admin/:path*"] };

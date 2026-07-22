@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthContext";
 import Link from "next/link";
+import { addCmsUser } from "@/lib/localCms";
 
 export default function CreateAccountPage() {
 	const [name, setName] = useState("");
@@ -12,14 +11,6 @@ export default function CreateAccountPage() {
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 	const [loading, setLoading] = useState(false);
-	const router = useRouter();
-	const { user } = useAuth();
-
-	// Redirect jika bukan admin
-	if (user && user.role !== "admin") {
-		router.push("/");
-		return null;
-	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -28,26 +19,14 @@ export default function CreateAccountPage() {
 		setLoading(true);
 
 		try {
-			const res = await fetch("/api/auth/register", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ name, email, password, role }),
-			});
-
-			const data = await res.json();
-
-			if (!res.ok) {
-				setError(data.error || "Gagal membuat akun");
-				return;
-			}
-
+			addCmsUser({ id: `user-${Date.now()}`, name, email, role, createdAt: new Date().toISOString(), active: true });
 			setSuccess(`Akun ${role} berhasil dibuat! Email: ${email}`);
 			setName("");
 			setEmail("");
 			setPassword("");
 			setRole("user");
 		} catch (err) {
-			setError("Terjadi kesalahan");
+			setError(err instanceof Error ? err.message : "Terjadi kesalahan");
 		} finally {
 			setLoading(false);
 		}

@@ -39,6 +39,7 @@ export type User = {
 	address?: Address[];
 	wishlist?: string[];
 	createdAt: string;
+	updatedAt?: string;
 };
 
 export type Address = {
@@ -82,6 +83,12 @@ export type Order = {
 	trackingHistory?: TrackingHistory[];
 	estimatedDelivery?: string;
 	courier?: string;
+	subtotal?: number;
+	shippingFee?: number;
+	serviceFee?: number;
+	discount?: number;
+	voucherCode?: string;
+	note?: string;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -92,6 +99,7 @@ export type OrderItem = {
 	image: string;
 	price: number;
 	quantity: number;
+	variant?: string;
 };
 
 

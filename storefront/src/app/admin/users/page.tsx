@@ -1,79 +1,25 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/components/AuthContext";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { AdminSidebar } from "@/components/AdminSidebar";
-
-type User = {
-	id: string;
-	email: string;
-	name: string;
-	role: string;
-	createdAt: string;
-};
+import { getCmsUsers, saveCmsUsers, type CmsUser } from "@/lib/localCms";
 
 export default function AdminUsersPage() {
-	const { user, loading: authLoading } = useAuth();
-	const router = useRouter();
-	const [users, setUsers] = useState<User[]>([]);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		if (!authLoading && (!user || user.role !== "admin")) {
-			router.push("/");
-			return;
-		}
-
-		if (user && user.role === "admin") {
-			fetchUsers();
-		}
-	}, [user, authLoading, router]);
-
-	const fetchUsers = async () => {
-		try {
-			const res = await fetch("/api/admin/users");
-			if (res.ok) {
-				const data = await res.json();
-				setUsers(data.users || []);
-			}
-		} catch (error) {
-			console.error("Error fetching users:", error);
-		} finally {
-			setLoading(false);
-		}
-	};
+	const [users, setUsers] = useState<CmsUser[]>(() => getCmsUsers());
 
 	const handleDelete = async (userId: string) => {
 		if (!confirm("Yakin ingin menghapus user ini?")) return;
 
-		try {
-			const res = await fetch(`/api/admin/users/${userId}`, {
-				method: "DELETE",
-			});
-
-			if (res.ok) {
-				fetchUsers();
-			} else {
-				alert("Gagal menghapus user");
-			}
-		} catch (error) {
-			console.error("Error deleting user:", error);
-			alert("Terjadi kesalahan");
-		}
+		const next = users.filter((item) => item.id !== userId);
+		saveCmsUsers(next);
+		setUsers(next);
 	};
 
-	if (authLoading || loading) {
-		return (
-			<div className="mx-auto max-w-7xl px-4 py-16 text-center">
-				<p>Memuat...</p>
-			</div>
-		);
-	}
-
-	if (!user || user.role !== "admin") {
-		return null;
-	}
+	const toggleActive = (userId: string) => {
+		const next = users.map((item) => item.id === userId ? { ...item, active: !item.active } : item);
+		saveCmsUsers(next);
+		setUsers(next);
+	};
 
 	const roleColors: Record<string, string> = {
 		admin: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400",
@@ -112,6 +58,7 @@ export default function AdminUsersPage() {
 								<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Email</th>
 								<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Role</th>
 								<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Tanggal Daftar</th>
+								<th className="px-4 py-3 text-left text-xs font-semibold uppercase">Status</th>
 								<th className="px-4 py-3 text-right text-xs font-semibold uppercase">Aksi</th>
 							</tr>
 						</thead>
@@ -135,8 +82,9 @@ export default function AdminUsersPage() {
 									<td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400">
 										{new Date(u.createdAt).toLocaleDateString("id-ID")}
 									</td>
+									<td className="px-4 py-3"><button onClick={() => toggleActive(u.id)} className={`rounded-full px-3 py-1 text-xs font-semibold ${u.active ? "bg-green-100 text-green-700" : "bg-zinc-200 text-zinc-600"}`}>{u.active ? "Aktif" : "Nonaktif"}</button></td>
 									<td className="px-4 py-3 text-right">
-										{u.id !== user.id && (
+										{u.id !== "admin-demo" && (
 											<button
 												onClick={() => handleDelete(u.id)}
 												className="rounded px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
